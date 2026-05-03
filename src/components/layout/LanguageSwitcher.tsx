@@ -57,7 +57,6 @@ export function LanguageSwitcher({ variant = "compact" }: Props) {
         align="end"
         sideOffset={8}
         className="w-64 p-2 rounded-xl shadow-xl border border-border bg-card max-h-[70vh] overflow-y-auto"
-        dir={dir as any}
       >
         <DropdownMenuLabel className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
           {t("nav.language", "Language")}

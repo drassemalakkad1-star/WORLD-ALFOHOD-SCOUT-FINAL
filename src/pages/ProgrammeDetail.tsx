@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
 export default function ProgrammeDetail() {
-  const { slug } = useParams();
+  const { slug } = useParams<{ slug: string }>();
   const programme = programmes.find(p => p.slug === slug);
 
   if (!programme) return <NotFound />;

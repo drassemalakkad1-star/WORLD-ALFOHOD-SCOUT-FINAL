@@ -12,7 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import {
+import { useQuery } from "@tanstack/react-query";
+import { getNews, urlFor } from "@/lib/sanityClient";
+import { 
   Search,
   LayoutGrid,
   List,
@@ -21,7 +23,8 @@ import {
   FileText,
   Download,
   Mail,
-  Eye
+  Eye,
+  Loader2
 } from "lucide-react";
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from "react-icons/fa";
 import {
@@ -58,6 +61,8 @@ const SORT_OPTIONS = [
   { value: "most_liked", label: "الأكثر إعجاباً" }
 ];
 
+
+
 export default function News() {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
@@ -69,35 +74,64 @@ export default function News() {
   
   const [currentFeaturedIndex, setCurrentFeaturedIndex] = useState(0);
 
-  const breakingNews = useMemo(() => news.find(n => n.breaking), []);
-  const featuredNews = useMemo(() => news.filter(n => n.featured).slice(0, 4), []);
-  const pressReleases = useMemo(() => news.filter(n => n.category === "بيانات صحفية").slice(0, 3), []);
-  const popularNews = useMemo(() => [...news].sort((a, b) => b.views - a.views).slice(0, 5), []);
+  const { data: sanityNews, isLoading } = useQuery({
+    queryKey: ["news"],
+    queryFn: getNews,
+  });
+
+  // Use sanity data if available, otherwise fallback to static data (for now)
+  const allNews = useMemo(() => {
+    if (sanityNews && sanityNews.length > 0) {
+      return sanityNews.map((n: any) => ({
+        ...n,
+        id: n._id,
+        slug: n.slug?.current || n._id,
+        image: n.mainImage ? urlFor(n.mainImage).url() : n.gallery?.[0] ? urlFor(n.gallery[0]).url() : "/placeholder-news.jpg",
+        date: n.eventDate || n._createdAt,
+        isoDate: n.eventDate || n._createdAt,
+        category: n.category || "أخبار",
+        excerpt: n.excerpt || (n.content ? n.content.substring(0, 150) + "..." : ""),
+        author: n.author || { name: "فريق التحرير", avatarColor: "#9333ea" },
+        views: n.views || 0,
+        likes: n.likes || 0,
+        tags: n.tags || [],
+        readTime: n.readTime || "٥ دقائق"
+      }));
+    }
+    return news;
+  }, [sanityNews]);
+
+  const breakingNews = useMemo(() => allNews.find((n: any) => n.breaking), [allNews]);
+  const featuredNews = useMemo(() => allNews.filter((n: any) => n.featured || n.isFeatured).slice(0, 4), [allNews]);
+  // If no featured news in sanity, take the first 4
+  const displayFeatured = featuredNews.length > 0 ? featuredNews : allNews.slice(0, 4);
   
-  // Extract all tags for the tag cloud
+  const pressReleases = useMemo(() => allNews.filter((n: any) => n.category === "بيانات صحفية").slice(0, 3), [allNews]);
+  const popularNews = useMemo(() => [...allNews].sort((a: any, b: any) => b.views - a.views).slice(0, 5), [allNews]);
+  
   const allTags = useMemo(() => {
     const tags = new Set<string>();
-    news.forEach(n => n.tags.forEach(t => tags.add(t)));
+    allNews.forEach((n: any) => n.tags?.forEach((t: string) => tags.add(t)));
     return Array.from(tags).slice(0, 15);
-  }, []);
+  }, [allNews]);
 
   const filteredNews = useMemo(() => {
-    let result = news;
+    let result = allNews;
 
     if (activeCategory !== "الكل") {
-      result = result.filter(n => n.category === activeCategory);
+      result = result.filter((n: any) => n.category === activeCategory);
     }
 
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter(n => 
-        n.title.toLowerCase().includes(q) || 
-        n.excerpt.toLowerCase().includes(q) ||
-        n.content.toLowerCase().includes(q)
+      result = result.filter((n: any) => 
+        n.title?.toLowerCase().includes(q) || 
+        n.excerpt?.toLowerCase().includes(q) ||
+        n.content?.toLowerCase().includes(q)
       );
     }
 
-    result = [...result].sort((a, b) => {
+    result = [...result].sort((a: any, b: any) => {
       switch (sortBy) {
         case "newest":
           return new Date(b.isoDate).getTime() - new Date(a.isoDate).getTime();
@@ -113,7 +147,7 @@ export default function News() {
     });
 
     return result;
-  }, [activeCategory, search, sortBy]);
+  }, [allNews, activeCategory, search, sortBy]);
 
   const itemsPerPage = 9;
   const totalPages = Math.ceil(filteredNews.length / itemsPerPage);
@@ -122,17 +156,15 @@ export default function News() {
     currentPage * itemsPerPage
   );
 
-  // Auto-rotate featured carousel
   useEffect(() => {
-    if (featuredNews.length <= 1) return;
+    if (displayFeatured.length <= 1) return;
     
     const interval = setInterval(() => {
-      setCurrentFeaturedIndex((prev) => (prev + 1) % featuredNews.length);
+      setCurrentFeaturedIndex((prev) => (prev + 1) % displayFeatured.length);
     }, 6000);
     return () => clearInterval(interval);
-  }, [featuredNews.length]);
+  }, [displayFeatured.length]);
 
-  // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [activeCategory, search, sortBy]);
@@ -185,7 +217,7 @@ export default function News() {
       )}
 
       {/* Featured Carousel */}
-      {featuredNews.length > 0 && (
+      {displayFeatured.length > 0 && (
         <section className="bg-muted/10 pb-12 pt-8">
           <div className="container mx-auto px-4 md:px-8">
             <div className="relative h-[400px] md:h-[500px] rounded-2xl overflow-hidden group">
@@ -199,29 +231,29 @@ export default function News() {
                   className="absolute inset-0"
                 >
                   <img loading="lazy" decoding="async" 
-                    src={featuredNews[currentFeaturedIndex].image} 
-                    alt={featuredNews[currentFeaturedIndex].title}
+                    src={displayFeatured[currentFeaturedIndex].image} 
+                    alt={displayFeatured[currentFeaturedIndex].title}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/50 to-transparent" />
                   
                   <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 z-20">
                     <Badge className="bg-secondary text-white hover:bg-secondary mb-4">
-                      {featuredNews[currentFeaturedIndex].category}
+                      {displayFeatured[currentFeaturedIndex].category}
                     </Badge>
-                    <Link href={`/news/${featuredNews[currentFeaturedIndex].slug}`}>
+                    <Link href={`/news/${displayFeatured[currentFeaturedIndex].slug}`}>
                       <h2 className="text-2xl md:text-4xl lg:text-5xl font-black text-white mb-4 leading-tight cursor-pointer hover:text-secondary transition-colors max-w-4xl">
-                        {featuredNews[currentFeaturedIndex].title}
+                        {displayFeatured[currentFeaturedIndex].title}
                       </h2>
                     </Link>
                     <p className="text-white/80 text-lg max-w-2xl mb-6 line-clamp-2 hidden md:block">
-                      {featuredNews[currentFeaturedIndex].excerpt}
+                      {displayFeatured[currentFeaturedIndex].excerpt}
                     </p>
                     <div className="flex items-center gap-6">
                       <span className="text-white/70 text-sm font-medium">
-                        {featuredNews[currentFeaturedIndex].date}
+                        {displayFeatured[currentFeaturedIndex].date}
                       </span>
-                      <Link href={`/news/${featuredNews[currentFeaturedIndex].slug}`}>
+                      <Link href={`/news/${displayFeatured[currentFeaturedIndex].slug}`}>
                         <Button className="bg-white text-primary hover:bg-white/90 font-bold rounded-full px-6">
                           اقرأ المزيد
                         </Button>
@@ -234,7 +266,7 @@ export default function News() {
               {/* Carousel Controls */}
               <div className="absolute bottom-6 left-6 md:left-12 flex items-center gap-3 z-30">
                 <div className="flex gap-2">
-                  {featuredNews.map((_, idx) => (
+                  {displayFeatured.map((_, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentFeaturedIndex(idx)}

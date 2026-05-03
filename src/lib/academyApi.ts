@@ -1,5 +1,6 @@
 import { Course, EnrollmentWithCourse } from "../data/academyTypes";
 import { ACADEMY_COURSES } from "../data/academyCourses";
+import { getAcademyCourses, urlFor } from "./sanityClient";
 
 const ENROLLMENTS_KEY = "cheetahs_academy_enrollments";
 
@@ -22,12 +23,60 @@ function saveEnrollments(data: StoredEnrollment[]) {
   try { localStorage.setItem(ENROLLMENTS_KEY, JSON.stringify(data)); } catch {}
 }
 
-// ─── Filtering / sorting helpers ──────────────────────────────────────────
-function filterCourses(params?: {
+async function getAllCourses() {
+  let combined = [...ACADEMY_COURSES];
+  
+  try {
+    const sanityCourses = await getAcademyCourses();
+    if (sanityCourses && sanityCourses.length > 0) {
+      // Convert Sanity courses to Course interface
+      const mappedSanity: Course[] = sanityCourses.map((sc: any) => ({
+        id: sc._id,
+        slug: sc.slug,
+        title: sc.title,
+        subtitle: sc.description?.slice(0, 100) + "...",
+        description: sc.description,
+        longDescription: sc.description,
+        category: sc.category,
+        level: sc.level,
+        duration: sc.duration,
+        lessonsCount: sc.lessons || 0,
+        enrolledCount: sc.enrollmentCount || 0,
+        rating: sc.rating || 5,
+        price: sc.price || 0,
+        isFree: sc.price === 0,
+        isFeatured: sc.featured || false,
+        isNew: true,
+        instructor: {
+          name: sc.instructor || "قائد كشفي",
+          title: "مدرب معتمد",
+          bio: "",
+          avatarColor: "bg-primary"
+        },
+        skills: [],
+        requirements: [],
+        lessons: [],
+        coverColor: sc.image ? urlFor(sc.image).url() : "bg-primary",
+        certificate: true
+      }));
+
+      // Merge and remove duplicates by slug (Sanity version wins)
+      const sanitySlugs = new Set(mappedSanity.map(c => c.slug));
+      combined = [...mappedSanity, ...ACADEMY_COURSES.filter(c => !sanitySlugs.has(c.slug))];
+    }
+  } catch (err) {
+    console.error("Error fetching Sanity courses, using fallback:", err);
+  }
+  
+  return combined;
+}
+
+async function filterCourses(params?: {
   category?: string; level?: string; q?: string;
   sort?: string; page?: number; pageSize?: number;
 }) {
-  let list = [...ACADEMY_COURSES];
+  const allCourses = await getAllCourses();
+  let list = [...allCourses];
 
   if (params?.category) {
     list = list.filter(c => c.category === params.category);
@@ -79,7 +128,8 @@ export const academyApi = {
   },
 
   getCourse: async (slug: string): Promise<Course> => {
-    const course = ACADEMY_COURSES.find(c => c.slug === slug);
+    const allCourses = await getAllCourses();
+    const course = allCourses.find(c => c.slug === slug);
     if (!course) throw new Error(`Course not found: ${slug}`);
     return course;
   },

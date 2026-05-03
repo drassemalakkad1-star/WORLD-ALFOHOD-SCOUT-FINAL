@@ -13,7 +13,8 @@ type RemotePrefs = {
 };
 
 export function usePreferencesSync() {
-  const { user } = useAuth();
+  const { state } = useAuth();
+  const { user } = state;
   const { i18n } = useTranslation();
   const { mode, setMode } = useAccessibility();
   const { theme, setTheme } = useTheme();

@@ -7,9 +7,10 @@ import { useCart } from "./cartContext";
 
 interface ProductCardProps {
   product: Product;
+  compact?: boolean;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, compact }: ProductCardProps) {
   const { dispatch } = useCart();
 
   const isGradient = product.image.startsWith("linear-gradient");

@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 export default function RegionDetail() {
-  const { slug } = useParams();
+  const { slug } = useParams<{ slug: string }>();
   const region = regions.find(r => r.slug === slug);
 
   if (!region) return <NotFound />;

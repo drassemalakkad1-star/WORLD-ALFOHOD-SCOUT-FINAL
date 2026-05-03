@@ -16,8 +16,8 @@ import { academyApi } from "@/lib/academyApi";
 import NotFound from "@/pages/not-found";
 
 export default function AcademyCourse() {
-  const [, params] = useRoute("/academy/c/:slug");
-  const slug = params?.slug || "";
+  const [, params] = useRoute<{ slug: string }>("/academy/c/:slug");
+  const slug = params ? (params as any).slug : "";
   const [location, setLocation] = useLocation();
   const { state: authState } = useAuth();
   const { toast } = useToast();
@@ -183,10 +183,12 @@ export default function AcademyCourse() {
               <div 
                 className="aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl relative flex items-center justify-center border-4 border-white/10"
                 style={{ 
-                  background: `linear-gradient(135deg, ${course.coverColor}, ${course.coverColor}aa)` 
+                  background: course.coverColor?.startsWith('http') 
+                    ? `url(${course.coverColor}) center/cover no-repeat` 
+                    : `linear-gradient(135deg, ${course.coverColor || '#004225'}, ${(course.coverColor || '#004225')}aa)` 
                 }}
               >
-                <BookOpen className="h-32 w-32 text-white/20" />
+                {!course.coverColor?.startsWith('http') && <BookOpen className="h-32 w-32 text-white/20" />}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
               </div>
             </div>
@@ -396,9 +398,13 @@ export default function AcademyCourse() {
                     <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors h-full flex flex-col group cursor-pointer">
                       <div 
                         className="h-32 relative flex items-center justify-center"
-                        style={{ background: `linear-gradient(135deg, ${c.coverColor}, ${c.coverColor}dd)` }}
+                        style={{ 
+                          background: c.coverColor?.startsWith('http') 
+                            ? `url(${c.coverColor}) center/cover no-repeat` 
+                            : `linear-gradient(135deg, ${c.coverColor || '#004225'}, ${(c.coverColor || '#004225')}dd)` 
+                        }}
                       >
-                        <BookOpen className="h-8 w-8 text-white/20 group-hover:scale-110 transition-transform" />
+                        {!c.coverColor?.startsWith('http') && <BookOpen className="h-8 w-8 text-white/20 group-hover:scale-110 transition-transform" />}
                       </div>
                       <div className="p-4 flex flex-col flex-1">
                         <h3 className="font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">{c.title}</h3>

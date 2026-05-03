@@ -103,7 +103,7 @@ function AddLessonDialog({ course, onSave }: { course: InstructorCourse; onSave:
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const form = useForm<LessonFormData>({
-    resolver: zodResolver(lessonSchema),
+    resolver: zodResolver(lessonSchema) as any,
     defaultValues: { title: "", duration: "", type: "video", description: "" },
   });
 
@@ -281,7 +281,7 @@ function NewCourseForm({ instructorId, instructorName, onCreated }: {
   const [selectedColor, setSelectedColor] = useState(COVER_COLORS[0]);
 
   const form = useForm<CourseFormData>({
-    resolver: zodResolver(courseSchema),
+    resolver: zodResolver(courseSchema) as any,
     defaultValues: {
       title: "", subtitle: "", description: "", longDescription: "",
       category: "", level: "", price: 0, isFree: true, certificate: true,
@@ -597,7 +597,7 @@ export default function InstructorDashboard() {
 
   useEffect(() => {
     if (!authState.isLoading && authState.user) {
-      setCourses(instructorStore.getAll(authState.user.id));
+      setCourses(instructorStore.getAll(String(authState.user.id)));
     }
   }, [authState.user, authState.isLoading]);
 
@@ -839,7 +839,7 @@ export default function InstructorDashboard() {
                 className="max-w-3xl mx-auto">
                 <h2 className="text-3xl font-black text-primary mb-8">إنشاء دورة جديدة</h2>
                 <NewCourseForm
-                  instructorId={authState.user.id}
+                  instructorId={String(authState.user.id)}
                   instructorName={authState.user.name}
                   onCreated={handleCourseCreated}
                 />

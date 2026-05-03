@@ -6,7 +6,7 @@ export default function Privacy() {
     <SiteLayout>
       <PageHero
         title="سياسة الخصوصية"
-        breadcrumbs={[{ label: "سياسة الخصوصية" }]}
+        breadcrumbs={[{ label: "سياسة الخصوصية", href: "/privacy" }]}
       />
       <section className="container mx-auto px-4 md:px-8 py-16 max-w-3xl">
         <article className="prose prose-lg max-w-none text-right space-y-6 leading-loose">

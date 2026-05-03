@@ -13,8 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { academyApi } from "@/lib/academyApi";
 
 export default function AcademyLearn() {
-  const [, params] = useRoute("/academy/learn/:slug");
-  const slug = params?.slug || "";
+  const [, params] = useRoute<{ slug: string }>("/academy/learn/:slug");
+  const slug = params ? (params as any).slug : "";
   const [location, setLocation] = useLocation();
   const searchParams = new URLSearchParams(window.location.search);
   const currentLessonSlug = searchParams.get("lesson");

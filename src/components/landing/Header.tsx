@@ -122,7 +122,6 @@ export function Header() {
                   align="start"
                   sideOffset={8}
                   className="w-56 p-2 rounded-xl shadow-xl border border-border bg-card"
-                  dir={dir as any}
                 >
                   {link.children.map((child) => (
                     <DropdownMenuItem key={child.name} asChild className="rounded-md p-0 focus:bg-muted">

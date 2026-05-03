@@ -20,7 +20,7 @@ export function DonationForm() {
   const [presetAmounts] = useState([25, 50, 100, 250]);
   
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       amount: 50,
       type: "one-time",

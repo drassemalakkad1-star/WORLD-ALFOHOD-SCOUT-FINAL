@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/accordion";
 
 export default function EventDetail() {
-  const { slug } = useParams();
+  const { slug } = useParams<{ slug: string }>();
   const event = events.find(e => e.slug === slug);
 
   if (!event) return <NotFound />;

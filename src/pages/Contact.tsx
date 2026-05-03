@@ -37,7 +37,7 @@ export default function Contact() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Mail className="h-5 w-5 text-secondary shrink-0" />
-                    <span dir="ltr">info@cheetahscity.org</span>
+                    <span dir="ltr">educational.times2025@gmail.com</span>
                   </div>
                 </div>
               </div>

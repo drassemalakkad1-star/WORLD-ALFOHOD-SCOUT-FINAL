@@ -1,0 +1,175 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width initial-scale=1.0">
+    <title>بيانو الفهود - STEINWAY & SONS</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: white;
+            font-family: 'Segoe UI' Tahoma Geneva Verdana sans-serif;
+            overflow: hidden;
+        }
+        .piano-container {
+            background: #1a1a1a;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0 0 0 0.8)
+                        inset 0 0 10px rgba(255 255 255 0.1);
+            border: 4px solid #333;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+            letter-spacing: 5px;
+            font-weight: 300;
+            border-bottom: 1px solid #444;
+            padding-bottom: 15px;
+        }
+        .keys {
+            display: flex;
+            position: relative;
+        }
+        .key {
+            width: 60px;
+            height: 250px;
+            border: 1px solid #000;
+            background: white;
+            border-radius: 0 0 5px 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 10px;
+            color: #888;
+            font-weight: bold;
+            transition: all 0.1s;
+            user-select: none;
+            box-shadow: inset 0 -5px 10px rgba(0000.1);
+        }
+        .key.active {
+            background: #e0e0e0;
+            height: 245px;
+            box-shadow: inset 0 -2px 5px rgba(0000.2);
+        }
+        .key.black {
+            width: 40px;
+            height: 150px;
+            background: #000;
+            margin-left: -20px;
+            margin-right: -20px;
+            z-index: 2;
+            border-radius: 0 0 3px 3px;
+            color: #555;
+            box-shadow: 0 5px 10px rgba(0000.5);
+        }
+        .key.black.active {
+            background: #333;
+            height: 145px;
+        }
+        .controls {
+            margin-top: 30px;
+            color: #888;
+            font-size: 14px;
+            animation: fadeInDown 1s ease-out;
+        }
+        kbd {
+            background: #333;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #fff;
+            margin: 0 2px;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <h2 style="margin:0; font-size: 24px;">STEINWAY & SONS</h2>
+        <div style="font-size: 10px; color: #666; margin-top: 5px;">WORLD ALFOHOD SCOUT EDITION</div>
+    </div>
+    
+    <div class="piano-container">
+        <div class="keys" id="piano-keys"></div>
+    </div>
+
+    <div class="controls">
+        استخدم المفاتيح <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <kbd>F</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>J</kbd> <kbd>K</kbd> أو انقر بالماوس للعزف
+    </div>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Piano sounds synthesis
+        function playNote(frequency) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(frequency audioCtx.currentTime);
+            
+            gain.gain.setValueAtTime(0.5 audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01 audioCtx.currentTime + 1);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 1);
+        }
+
+        const notes = [
+            { key: 'A' freq: 261.63 type: 'white' } // C4
+            { key: 'W' freq: 277.18 type: 'black' } // C4
+            { key: 'S' freq: 293.66 type: 'white' } // D4
+            { key: 'E' freq: 311.13 type: 'black' } // D4
+            { key: 'D' freq: 329.63 type: 'white' } // E4
+            { key: 'F' freq: 349.23 type: 'white' } // F4
+            { key: 'T' freq: 369.99 type: 'black' } // F4
+            { key: 'G' freq: 392.00 type: 'white' } // G4
+            { key: 'Y' freq: 415.30 type: 'black' } // G4
+            { key: 'H' freq: 440.00 type: 'white' } // A4
+            { key: 'U' freq: 466.16 type: 'black' } // A4
+            { key: 'J' freq: 493.88 type: 'white' } // B4
+            { key: 'K' freq: 523.25 type: 'white' } // C5
+        ];
+
+        const container = document.getElementById('piano-keys');
+        const keyMap = {};
+
+        notes.forEach(item => {
+            const keyEl = document.createElement('div');
+            keyEl.className = `key ${item.type}`;
+            keyEl.innerHTML = item.key;
+            
+            const handlePress = () => {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                keyEl.classList.add('active');
+                playNote(item.freq);
+                setTimeout(() => keyEl.classList.remove('active') 150);
+            };
+
+            keyEl.addEventListener('mousedown' handlePress);
+            keyMap[item.key.toLowerCase()] = handlePress;
+            container.appendChild(keyEl);
+        });
+
+        window.addEventListener('keydown' (e) => {
+            const action = keyMap[e.key.toLowerCase()];
+            if (action) action();
+        });
+    </script>
+</body>
+</html>
+
+

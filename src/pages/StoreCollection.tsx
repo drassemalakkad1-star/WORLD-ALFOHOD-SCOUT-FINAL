@@ -22,7 +22,7 @@ const ITEMS_PER_PAGE = 9;
 
 export default function StoreCollection() {
   const [, params] = useRoute("/store/c/:slug");
-  const slug = params?.slug;
+  const slug = params ? (params as any).slug : "";
 
   const collection = collections.find((c) => c.slug === slug);
   

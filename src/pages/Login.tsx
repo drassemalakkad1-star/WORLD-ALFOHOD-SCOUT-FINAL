@@ -36,7 +36,7 @@ export default function Login() {
   const [, setLocation] = useLocation();
 
   const form = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(loginSchema) as any,
     defaultValues: {
       email: "",
       password: "",

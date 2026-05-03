@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { SiteLayout } from "@/components/layout/SiteLayout";
 import { ProductCard } from "@/components/store/ProductCard";
 import { CartDrawer } from "@/components/store/CartDrawer";
@@ -6,7 +7,7 @@ import { CinematicHeroSlider, CinematicSlide } from "@/components/store/Cinemati
 import { OffersTicker } from "@/components/store/OffersTicker";
 import { BentoGrid, BentoItem } from "@/components/store/BentoGrid";
 import { LiveActivityFeed } from "@/components/store/LiveActivityFeed";
-import { products } from "@/data/products";
+import { storeApi } from "@/lib/storeApi";
 import { collections } from "@/data/collections";
 import { Button } from "@/components/ui/button";
 import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, ArrowLeft, Compass, Baby, Award, Sparkles, BookOpen, Briefcase } from "lucide-react";
@@ -28,7 +29,15 @@ export default function Store() {
   const [sortBy, setSortBy] = useState("latest");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const categories = Array.from(new Set(products.map(p => p.category)));
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ["products"],
+    queryFn: storeApi.listProducts
+  });
+
+  const categories = useMemo(() => 
+    Array.from(new Set(products.map(p => p.category))),
+    [products]
+  );
 
   const filteredProducts = useMemo(() => {
     let result = products;
@@ -65,7 +74,7 @@ export default function Store() {
     }
 
     return result;
-  }, [selectedCategory, searchQuery, priceRange, inStockOnly, sortBy]);
+  }, [products, selectedCategory, searchQuery, priceRange, inStockOnly, sortBy]);
 
   const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
   const paginatedProducts = filteredProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -306,26 +315,61 @@ export default function Store() {
                 </div>
               )}
 
-              {/* Grid Header */}
-              <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4 bg-muted/10 p-4 rounded-xl">
-                <p className="text-muted-foreground font-medium">
-                  عرض <span className="font-bold text-primary">{paginatedProducts.length}</span> من <span className="font-bold text-primary">{filteredProducts.length}</span> منتج
-                </p>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-muted-foreground">ترتيب حسب:</span>
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-[180px] bg-white rounded-lg">
-                      <SelectValue placeholder="ترتيب" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="latest">الأحدث</SelectItem>
-                      <SelectItem value="price-asc">السعر: من الأقل للأعلى</SelectItem>
-                      <SelectItem value="price-desc">السعر: من الأعلى للأقل</SelectItem>
-                      <SelectItem value="rating">الأعلى تقييماً</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {/* Professional Store Toolbar */}
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-8 p-1 rounded-2xl bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border border-primary/10 backdrop-blur-sm sticky top-[72px] z-30"
+              >
+                <div className="bg-white/80 rounded-[14px] p-4 flex flex-col md:flex-row items-center gap-6">
+                  {/* Search Bar - Center Piece */}
+                  <div className="relative flex-1 w-full group">
+                    <div className="absolute inset-0 bg-secondary/20 rounded-xl blur-md opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                    <div className="relative">
+                      <Search className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-secondary transition-colors" />
+                      <Input 
+                        placeholder="ماذا تبحث عنه اليوم؟ استكشف منتجاتنا المميزة..." 
+                        className="h-14 pl-12 pr-12 rounded-xl bg-white border-2 border-transparent focus:border-secondary/50 focus:ring-0 text-lg font-medium transition-all shadow-sm"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                      {searchQuery && (
+                        <button 
+                          onClick={() => setSearchQuery("")}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          إلغاء
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quick Actions & Sort */}
+                  <div className="flex items-center gap-4 shrink-0 w-full md:w-auto">
+                    <div className="flex flex-col items-end hidden lg:flex">
+                      <span className="text-[10px] uppercase tracking-widest font-black text-muted-foreground">ترتيب المنتجات</span>
+                      <Select value={sortBy} onValueChange={setSortBy}>
+                        <SelectTrigger className="w-[200px] h-10 bg-transparent border-none focus:ring-0 font-bold text-primary p-0 text-right">
+                          <SelectValue placeholder="ترتيب حسب" />
+                        </SelectTrigger>
+                        <SelectContent align="end" className="rounded-xl border-primary/10">
+                          <SelectItem value="latest">✨ الأحدث والمميز</SelectItem>
+                          <SelectItem value="price-asc">💰 السعر: من الأقل</SelectItem>
+                          <SelectItem value="price-desc">💎 السعر: من الأعلى</SelectItem>
+                          <SelectItem value="rating">⭐️ الأعلى تقييماً</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="h-10 w-px bg-border mx-2 hidden md:block" />
+
+                    <div className="bg-primary/5 px-4 py-2 rounded-xl border border-primary/5 flex flex-col items-center justify-center min-w-[80px]">
+                      <span className="text-[10px] font-black text-muted-foreground uppercase leading-none mb-1">النتائج</span>
+                      <span className="text-xl font-black text-primary leading-none">{filteredProducts.length}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Main Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

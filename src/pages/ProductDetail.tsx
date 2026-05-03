@@ -1,12 +1,13 @@
 import { SiteLayout } from "@/components/layout/SiteLayout";
 import { useParams, Link } from "wouter";
-import { products } from "@/data/products";
+import { storeApi } from "@/lib/storeApi";
+import { products as STATIC_PRODUCTS } from "@/data/products";
 import NotFound from "./not-found";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Check, ChevronRight, Star, Plus, Minus, Truck, RotateCcw, Shield } from "lucide-react";
+import { ShoppingCart, Check, ChevronRight, Star, Plus, Minus, Truck, RotateCcw, Shield, Loader2 } from "lucide-react";
 import { useCart } from "@/components/store/cartContext";
 import { CartDrawer } from "@/components/store/CartDrawer";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProductCard } from "@/components/store/ProductCard";
 import { Carousel3D, Carousel3DItem } from "@/components/store/Carousel3D";
 import { LiveActivityFeed } from "@/components/store/LiveActivityFeed";
@@ -14,16 +15,40 @@ import { motion } from "framer-motion";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useQuery } from "@tanstack/react-query";
 
 export default function ProductDetail() {
-  const { slug } = useParams();
+  const { slug } = useParams<{ slug: string }>();
   const { dispatch } = useCart();
-  const product = products.find(p => p.slug === slug);
   
-  const [selectedColor, setSelectedColor] = useState(product?.colors?.[0]?.name);
-  const [selectedSize, setSelectedSize] = useState(product?.sizes?.[0]);
+  const { data: product, isLoading } = useQuery({
+    queryKey: ["product", slug],
+    queryFn: () => storeApi.getProduct(slug!),
+    enabled: !!slug
+  });
+  
+  const [selectedColor, setSelectedColor] = useState<string | undefined>();
+  const [selectedSize, setSelectedSize] = useState<string | undefined>();
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
+
+  useEffect(() => {
+    if (product) {
+      setSelectedColor(product.colors?.[0]?.name);
+      setSelectedSize(product.sizes?.[0]);
+    }
+  }, [product]);
+
+  if (isLoading) {
+    return (
+      <SiteLayout>
+        <div className="flex flex-col items-center justify-center min-h-screen">
+          <Loader2 className="h-12 w-12 animate-spin text-secondary mb-4" />
+          <p className="text-muted-foreground font-bold">جاري تحميل المنتج...</p>
+        </div>
+      </SiteLayout>
+    );
+  }
 
   if (!product) return <NotFound />;
 
@@ -43,7 +68,7 @@ export default function ProductDetail() {
     });
   };
 
-  const relatedProducts = products
+  const relatedProducts = STATIC_PRODUCTS
     .filter(p => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
 

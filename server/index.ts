@@ -43,7 +43,7 @@ async function bootstrap() {
   }
 
   const port = Number(process.env.PORT) || 5000;
-  server.listen({ port, host: "0.0.0.0", reusePort: true }, () => {
+  server.listen({ port, host: "0.0.0.0" }, () => {
     console.log(`[server] listening on http://0.0.0.0:${port}`);
   });
 }

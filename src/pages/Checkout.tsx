@@ -178,7 +178,7 @@ export default function Checkout() {
   }, [cartState.items.length, currentStep, setLocation, toast]);
 
   const shippingForm = useForm<ShippingData>({
-    resolver: zodResolver(shippingSchema),
+    resolver: zodResolver(shippingSchema) as any,
     defaultValues: {
       fullName: authState.user?.name || "",
       email: authState.user?.email || "",
@@ -193,7 +193,7 @@ export default function Checkout() {
   });
 
   const paymentForm = useForm<PaymentData>({
-    resolver: zodResolver(paymentSchema),
+    resolver: zodResolver(paymentSchema) as any,
     defaultValues: {
       cardNumber: "",
       cardName: "",

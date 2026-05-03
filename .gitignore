@@ -1,6 +1,13 @@
-﻿node_modules/
+node_modules/
 dist/
 .env
 .replit
 .agents/
 .local/
+upm/
+scratch/
+attached_assets/
+git/
+gitignore
+*.log
+.DS_Store

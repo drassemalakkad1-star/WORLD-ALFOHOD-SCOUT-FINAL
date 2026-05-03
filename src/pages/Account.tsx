@@ -254,7 +254,7 @@ export default function Account() {
                     </div>
                     <div className="bg-black/20 backdrop-blur-sm rounded-xl px-4 py-2 flex items-center gap-2">
                       <span className="text-white/60 text-sm">رقم العضوية</span>
-                      <span className="font-semibold uppercase font-mono">{user.id.substring(0, 6)}</span>
+                      <span className="font-semibold uppercase font-mono">{String(user.id).substring(0, 6)}</span>
                     </div>
                   </div>
                 </div>
@@ -431,7 +431,7 @@ export default function Account() {
 
                       <div className="mt-auto space-y-4">
                         <div className="font-mono text-xl tracking-widest text-primary-foreground/90">
-                          {user.id.substring(0, 4)}-{user.id.substring(4, 8)}-CTH
+                          {String(user.id).substring(0, 4)}-{String(user.id).substring(4, 8)}-CTH
                         </div>
                         <div className="flex justify-between items-end">
                           <div>

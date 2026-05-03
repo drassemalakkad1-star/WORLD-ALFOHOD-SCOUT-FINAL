@@ -64,7 +64,7 @@ export default function Register() {
   const [, setLocation] = useLocation();
 
   const form = useForm<z.infer<typeof registerSchema>>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(registerSchema) as any,
     defaultValues: {
       name: "",
       email: "",

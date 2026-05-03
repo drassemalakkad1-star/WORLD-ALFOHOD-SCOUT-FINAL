@@ -8,7 +8,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { CheckCircle2 } from "lucide-react";
 
 export default function JoinRole() {
-  const { role } = useParams();
+  const { role } = useParams<{ role: string }>();
   
   if (role !== "youth" && role !== "leader" && role !== "volunteer" && role !== "partner") {
     return <NotFound />;

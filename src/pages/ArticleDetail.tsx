@@ -4,7 +4,7 @@ import { useParams, Link } from "wouter";
 import { news } from "@/data/news";
 import NotFound from "./not-found";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { FaFacebook, FaTwitter, FaLinkedin } from "react-icons/fa";
 import { 
   Share2, 
@@ -16,21 +16,62 @@ import {
   Bookmark,
   MessageSquare,
   Send,
-  Mail
+  Mail,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { useQuery } from "@tanstack/react-query";
+import { getNewsBySlug, urlFor } from "@/lib/sanityClient";
+
+
 
 export default function ArticleDetail() {
-  const { slug } = useParams();
+  const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
-  const article = news.find(n => n.slug === slug);
+  
+  const { data: sanityArticle, isLoading } = useQuery({
+    queryKey: ["news", slug],
+    queryFn: () => getNewsBySlug(slug || ""),
+    enabled: !!slug,
+  });
+
+  // Use sanity data if available, otherwise fallback to static data
+  const article = useMemo(() => {
+    if (sanityArticle) {
+      return {
+        ...sanityArticle,
+        id: sanityArticle._id,
+        image: sanityArticle.mainImage ? urlFor(sanityArticle.mainImage).url() : sanityArticle.gallery?.[0] ? urlFor(sanityArticle.gallery[0]).url() : "/placeholder-news.jpg",
+        date: sanityArticle.eventDate || sanityArticle._createdAt,
+        category: sanityArticle.category || "أخبار",
+        excerpt: sanityArticle.excerpt || (sanityArticle.content ? sanityArticle.content.substring(0, 150) + "..." : ""),
+        author: sanityArticle.author || { name: "فريق التحرير", avatarColor: "#9333ea", role: "محرر أخبار" },
+        views: sanityArticle.views || 0,
+        likes: sanityArticle.likes || 0,
+        tags: sanityArticle.tags || [],
+        readTime: sanityArticle.readTime || "٥ دقائق"
+      };
+    }
+    return news.find(n => n.slug === slug);
+  }, [sanityArticle, slug]);
+
   const [comment, setComment] = useState("");
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  if (isLoading) {
+    return (
+      <SiteLayout>
+        <div className="flex justify-center items-center min-h-[60vh]">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+      </SiteLayout>
+    );
+  }
 
   if (!article) return <NotFound />;
 
