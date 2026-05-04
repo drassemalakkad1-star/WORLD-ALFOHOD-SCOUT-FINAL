@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, PawPrint, ChevronDown, ShoppingCart, User as UserIcon, LogOut, Settings, CreditCard, ShoppingBag, GraduationCap } from "lucide-react";
+import { Menu, PawPrint, ChevronDown, ShoppingCart, User as UserIcon, LogOut, Settings, CreditCard, ShoppingBag, GraduationCap, ShieldCheck } from "lucide-react";
 import { useCart } from "../store/cartContext";
 import { useAuth } from "../auth/authContext";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
@@ -43,32 +43,28 @@ export function Header() {
   };
 
   const mainLinks = [
-    { key: "events-hide", name: t("nav.home"), href: "/" },
-    { key: "about", name: t("nav.about"), href: "/about" },
+    { key: "home", name: t("nav.home"), href: "/" },
     {
-      key: "whatWeDo",
-      name: t("nav.whatWeDo"),
-      href: "/what-we-do",
-      children: [
-        { name: t("nav.overview"), href: "/what-we-do" },
-        { name: t("nav.messengersOfPeace"), href: "/programmes/messengers-of-peace" },
-        { name: t("nav.earthTribe"), href: "/programmes/earth-tribe" },
-        { name: t("nav.youthLeadership"), href: "/programmes/youth-leadership" },
-      ],
-    },
-    { key: "academy", name: t("nav.academy"), href: "/academy" },
-    { key: "games", name: t("nav.games"), href: "/games" },
-    { key: "news", name: t("nav.news"), href: "/news" },
-    { key: "events-hide", name: t("nav.events"), href: "/events" },
-    { key: "regions-hide", name: t("nav.regions"), href: "/regions" },
-    {
-      key: "resources",
-      name: t("nav.resources"),
+      key: "therapeutic",
+      name: "الترويح والدمج",
       href: "/resources",
       children: [
-        { name: t("nav.library"), href: "/resources" },
-        { name: t("nav.videos"), href: "/videos" },
-      ],
+        { name: "الفئة الحركية", href: "/resources" },
+        { name: "الفئة الذهنية", href: "/resources" },
+        { name: "فئة التوحد", href: "/resources" },
+        { name: "الموسوعة الصوتية", href: "/resources" },
+        { name: "لوحة الشرف الكبرى", href: "/hall-of-fame" },
+      ]
+    },
+    { 
+      key: "academy", 
+      name: t("nav.academy"), 
+      href: "/academy",
+      children: [
+        { name: t("nav.overview"), href: "/academy" },
+        { name: t("nav.games"), href: "/games" },
+        { name: t("nav.instructorPanel"), href: "/instructor" },
+      ]
     },
     {
       key: "store",
@@ -79,55 +75,71 @@ export function Header() {
         { name: t("nav.newIn"), href: "/store/c/new-in" },
         { name: t("nav.kids"), href: "/store/c/kids" },
         { name: t("nav.leaders"), href: "/store/c/leaders" },
-        { name: t("nav.badges"), href: "/store/c/badges" },
-        { name: t("nav.personalised"), href: "/store/c/personalised" },
-        { name: t("nav.camping"), href: "/store/c/camping" },
-        { name: t("nav.eventsCollection"), href: "/store/c/events" },
-        { name: t("nav.gifts"), href: "/store/c/gifts" },
+        { name: "متجر التكافل", href: "/solidarity" },
+      ],
+    },
+    {
+      key: "resources",
+      name: t("nav.resources"),
+      href: "/resources",
+      children: [
+        { name: t("nav.library"), href: "/resources" },
+        { name: t("nav.videos"), href: "/videos" },
+      ],
+    },
+    {
+      key: "movement",
+      name: t("nav.movement", "الحركة"),
+      href: "/about",
+      children: [
+        { name: t("nav.about"), href: "/about" },
+        { name: t("nav.whatWeDo"), href: "/what-we-do" },
+        { name: t("nav.regions"), href: "/regions" },
+        { name: t("nav.news"), href: "/news" },
+        { name: t("nav.events"), href: "/events" },
       ],
     },
   ];
 
-  const isHidden = (key: string) =>
-    key === "events-hide" || key === "regions-hide" ? "hidden lg:inline-flex" : "";
+  const isHidden = (key: string) => "";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/80 backdrop-blur-md" dir={dir}>
-      <div className="container mx-auto flex h-16 items-center gap-2 md:gap-3 lg:gap-4 px-4 md:px-6">
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/90 backdrop-blur-lg" dir={dir}>
+      <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
 
         {/* Logo — far right in RTL */}
-        <Link href="/" className="flex items-center gap-2 text-primary hover:opacity-90 transition-opacity shrink-0 ms-0 me-3 md:me-4 lg:me-6 xl:me-8" data-testid="link-logo-home">
+        <Link href="/" className="flex items-center gap-2 text-primary hover:opacity-90 transition-opacity shrink-0" data-testid="link-logo-home">
           <PawPrint className="h-6 w-6 text-secondary shrink-0" strokeWidth={2.5} />
           <div className="leading-tight">
-            <div className="font-black text-base lg:text-lg tracking-tight whitespace-nowrap">عالم الفهود</div>
-            <div className="text-[8px] font-bold text-secondary tracking-widest uppercase whitespace-nowrap hidden sm:block">WORLD ALFOHOD SCOUT</div>
+            <div className="font-black text-sm lg:text-lg tracking-tight whitespace-nowrap">عالم الفهود</div>
+            <div className="text-[8px] font-bold text-secondary tracking-widest uppercase whitespace-nowrap hidden lg:block">WORLD ALFOHOD SCOUT</div>
           </div>
         </Link>
 
         {/* Desktop Nav — fills remaining space */}
-        <nav className="hidden md:flex flex-1 items-center justify-start gap-0.5 lg:gap-1 min-w-0">
+        <nav className="hidden lg:flex flex-1 items-center justify-center gap-1 xl:gap-4 min-w-0 overflow-hidden">
           {mainLinks.map((link, idx) => (
             link.children ? (
               <DropdownMenu key={`${link.key}-${idx}`} dir={dir as any}>
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className={`inline-flex items-center gap-0.5 h-9 px-2 lg:px-2.5 rounded-md font-bold text-xs lg:text-sm text-primary hover:text-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-secondary transition-colors data-[state=open]:text-secondary group whitespace-nowrap ${isHidden(link.key)}`}
+                    className="inline-flex items-center gap-1 h-9 px-1.5 lg:px-3 rounded-full font-bold text-[10px] lg:text-[13px] xl:text-sm text-primary hover:text-secondary hover:bg-muted/50 focus:outline-none transition-all data-[state=open]:text-secondary group whitespace-nowrap"
                   >
                     {link.name}
                     <ChevronDown className="h-3 w-3 transition-transform group-data-[state=open]:rotate-180 shrink-0" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
-                  align="start"
+                  align="center"
                   sideOffset={8}
-                  className="w-56 p-2 rounded-xl shadow-xl border border-border bg-card"
+                  className="w-56 p-2 rounded-2xl shadow-2xl border border-border bg-card/95 backdrop-blur-sm"
                 >
                   {link.children.map((child) => (
-                    <DropdownMenuItem key={child.name} asChild className="rounded-md p-0 focus:bg-muted">
+                    <DropdownMenuItem key={child.name} asChild className="rounded-xl p-0 focus:bg-muted">
                       <Link
                         href={child.href}
-                        className={`block w-full px-3 py-2.5 font-semibold text-sm text-primary hover:text-secondary cursor-pointer ${dir === "rtl" ? "text-right" : "text-left"}`}
+                        className={`block w-full px-4 py-2.5 font-semibold text-xs lg:text-sm text-primary hover:text-secondary cursor-pointer ${dir === "rtl" ? "text-right" : "text-left"}`}
                       >
                         {child.name}
                       </Link>
@@ -139,7 +151,7 @@ export function Header() {
               <Link
                 key={`${link.key}-${idx}`}
                 href={link.href}
-                className={`inline-flex items-center h-9 px-2 lg:px-2.5 rounded-md font-bold text-xs lg:text-sm text-primary hover:text-secondary transition-colors whitespace-nowrap ${isHidden(link.key)}`}
+                className="inline-flex items-center h-9 px-1.5 lg:px-3 rounded-full font-bold text-[10px] lg:text-[13px] xl:text-sm text-primary hover:text-secondary hover:bg-muted/50 transition-all whitespace-nowrap"
               >
                 {link.name}
               </Link>
@@ -148,8 +160,8 @@ export function Header() {
         </nav>
 
         {/* Auth + Cart — far left in RTL */}
-        <div className="hidden md:flex items-center gap-1.5 shrink-0">
-          <div className="hidden 2xl:block">
+        <div className="hidden lg:flex items-center gap-1 xl:gap-2 shrink-0">
+          <div className="hidden xl:block">
             <GlobalSearch variant="header" />
           </div>
           <ThemeToggle />
@@ -207,6 +219,13 @@ export function Header() {
                     <GraduationCap className="h-4 w-4" /> {t("nav.instructorPanel", "Instructor")}
                   </Link>
                 </DropdownMenuItem>
+                {authState.user.role === "admin" && (
+                  <DropdownMenuItem asChild className="gap-2 cursor-pointer rounded-lg font-bold text-secondary">
+                    <Link href="/admin">
+                      <ShieldCheck className="h-4 w-4" /> لوحة المدير
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="gap-2 cursor-pointer text-destructive focus:text-destructive rounded-lg">
                   <LogOut className="h-4 w-4" /> {t("nav.signOut")}
@@ -228,7 +247,7 @@ export function Header() {
         </div>
 
         {/* Mobile Nav */}
-        <div className="md:hidden flex items-center gap-1">
+        <div className="lg:hidden flex items-center gap-1">
           <ThemeToggle />
           <LanguageSwitcher variant="icon" />
           <Button variant="ghost" size="icon" onClick={() => cartDispatch({ type: "TOGGLE_CART" })} className="relative text-primary">

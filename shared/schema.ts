@@ -85,6 +85,83 @@ export const contactMessages = pgTable("contact_messages", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const news = pgTable("news", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  title: varchar("title", { length: 255 }).notNull(),
+  excerpt: text("excerpt").notNull(),
+  content: text("content").notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  image: text("image").notNull(),
+  authorName: varchar("author_name", { length: 255 }).notNull(),
+  authorRole: varchar("author_role", { length: 100 }).notNull(),
+  authorAvatarColor: varchar("author_avatar_color", { length: 20 }).notNull(),
+  featured: integer("featured").notNull().default(0),
+  breaking: integer("breaking").notNull().default(0),
+  views: integer("views").notNull().default(0),
+  likes: integer("likes").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const supportRequests = pgTable("support_requests", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
+  fullName: varchar("full_name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 50 }).notNull(),
+  type: varchar("type", { length: 100 }).notNull(), // 'request' or 'donation'
+  category: varchar("category", { length: 100 }).notNull(),
+  item: varchar("item", { length: 255 }).notNull(),
+  message: text("message"),
+  status: varchar("status", { length: 50 }).notNull().default("pending"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const products = pgTable("products", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  price: integer("price").notNull(), // stored as cents or whole units depending on frontend use
+  currency: varchar("currency", { length: 10 }).notNull().default("USD"),
+  category: varchar("category", { length: 100 }).notNull(),
+  image: text("image").notNull(),
+  tag: varchar("tag", { length: 50 }),
+  inStock: integer("in_stock").notNull().default(1),
+  rating: text("rating").default("5.0"),
+  reviewCount: integer("review_count").default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const academyCourses = pgTable("academy_courses", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  title: varchar("title", { length: 255 }).notNull(),
+  subtitle: varchar("subtitle", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  longDescription: text("long_description").notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  level: varchar("level", { length: 50 }).notNull(),
+  duration: varchar("duration", { length: 50 }).notNull(),
+  price: integer("price").notNull().default(0),
+  isFree: integer("is_free").notNull().default(1),
+  certificate: integer("certificate").notNull().default(1),
+  coverColor: varchar("cover_color", { length: 20 }).notNull(),
+  instructorName: varchar("instructor_name", { length: 255 }).notNull(),
+  instructorTitle: varchar("instructor_title", { length: 255 }).notNull(),
+  instructorBio: text("instructor_bio").notNull(),
+  instructorAvatarColor: varchar("instructor_avatar_color", { length: 20 }).notNull(),
+  lessonsCount: integer("lessons_count").notNull().default(0),
+  enrolledCount: integer("enrolled_count").notNull().default(0),
+  rating: text("rating").default("5.0"),
+  isFeatured: integer("is_featured").notNull().default(0),
+  isNew: integer("is_new").notNull().default(1),
+  lessons: jsonb("lessons").notNull().default([]), // Array of lesson objects
+  skills: jsonb("skills").notNull().default([]), // Array of strings
+  requirements: jsonb("requirements").notNull().default([]), // Array of strings
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -165,3 +242,108 @@ export const insertContactSchema = createInsertSchema(contactMessages).omit({
 });
 export type InsertContact = z.infer<typeof insertContactSchema>;
 export type ContactMessage = typeof contactMessages.$inferSelect;
+
+export const youtubeChannels = pgTable("youtube_channels", {
+  id: serial("id").primaryKey(),
+  channelId: varchar("channel_id", { length: 255 }).notNull().unique(),
+  title: varchar("title", { length: 255 }).notNull(),
+  thumbnail: text("thumbnail"),
+  isActive: integer("is_active").notNull().default(1),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const youtubeVideos = pgTable("youtube_videos", {
+  id: serial("id").primaryKey(),
+  channelId: varchar("channel_id", { length: 255 }).notNull(),
+  videoId: varchar("video_id", { length: 255 }).notNull().unique(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  thumbnail: text("thumbnail").notNull(),
+  publishedAt: timestamp("published_at"),
+  sortOrder: integer("sort_order").default(0),
+});
+
+export const hallOfFameNominees = pgTable("hall_of_fame_nominees", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }), // nominator
+  nomineeName: varchar("nominee_name", { length: 255 }).notNull(),
+  relationship: varchar("relationship", { length: 100 }).notNull(), // 'mother' or 'father'
+  description: text("description").notNull(),
+  image: text("image"),
+  votes: integer("votes").notNull().default(0),
+  views: integer("views").notNull().default(0),
+  status: varchar("status", { length: 50 }).notNull().default("active"), // 'active', 'won', 'archived'
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const hallOfFameVotes = pgTable("hall_of_fame_votes", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  nomineeId: integer("nominee_id").notNull().references(() => hallOfFameNominees.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  uniq: uniqueIndex("hof_vote_user_nominee_uniq").on(table.userId, table.nomineeId),
+}));
+
+export const hallOfFameWinners = pgTable("hall_of_fame_winners", {
+  id: serial("id").primaryKey(),
+  nomineeId: integer("nominee_id").notNull().references(() => hallOfFameNominees.id, { onDelete: "cascade" }),
+  rank: integer("rank").notNull(), // 1, 2, 3, 4 for pyramid
+  year: integer("year").notNull(),
+  month: integer("month").notNull(),
+  prizeTitle: varchar("prize_title", { length: 255 }),
+  familyPhoto: text("family_photo"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+
+// New schemas for admin management
+export const insertNewsSchema = createInsertSchema(news).omit({ id: true, createdAt: true, views: true, likes: true });
+export type InsertNews = z.infer<typeof insertNewsSchema>;
+export type NewsArticle = typeof news.$inferSelect;
+
+export const insertProductSchema = createInsertSchema(products).omit({ id: true, createdAt: true });
+export type InsertProduct = z.infer<typeof insertProductSchema>;
+export type ProductEntry = typeof products.$inferSelect;
+
+export const insertAcademyCourseSchema = createInsertSchema(academyCourses).omit({ id: true, createdAt: true, enrolledCount: true });
+export type InsertAcademyCourse = z.infer<typeof insertAcademyCourseSchema>;
+export type AcademyCourseEntry = typeof academyCourses.$inferSelect;
+
+export const insertYoutubeChannelSchema = createInsertSchema(youtubeChannels).omit({ id: true, createdAt: true });
+export type InsertYoutubeChannel = z.infer<typeof insertYoutubeChannelSchema>;
+export type YoutubeChannelEntry = typeof youtubeChannels.$inferSelect;
+
+export const insertYoutubeVideoSchema = createInsertSchema(youtubeVideos).omit({ id: true });
+export type InsertYoutubeVideo = z.infer<typeof insertYoutubeVideoSchema>;
+export type YoutubeVideoEntry = typeof youtubeVideos.$inferSelect;
+
+export const insertSupportRequestSchema = createInsertSchema(supportRequests).omit({
+  id: true,
+  createdAt: true,
+  status: true,
+  userId: true,
+}).extend({
+  email: z.string().email("بريد إلكتروني غير صالح"),
+  phone: z.string().min(8, "رقم الهاتف يجب أن يكون 8 أرقام على الأقل"),
+});
+export type InsertSupportRequest = z.infer<typeof insertSupportRequestSchema>;
+export type SupportRequest = typeof supportRequests.$inferSelect;
+
+export const insertNomineeSchema = createInsertSchema(hallOfFameNominees).omit({
+  id: true,
+  createdAt: true,
+  votes: true,
+  views: true,
+  status: true,
+  userId: true,
+});
+export type InsertNominee = z.infer<typeof insertNomineeSchema>;
+export type Nominee = typeof hallOfFameNominees.$inferSelect;
+
+export const insertWinnerSchema = createInsertSchema(hallOfFameWinners).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertWinner = z.infer<typeof insertWinnerSchema>;
+export type Winner = typeof hallOfFameWinners.$inferSelect;

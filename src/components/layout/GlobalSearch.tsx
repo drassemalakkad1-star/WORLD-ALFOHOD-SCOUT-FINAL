@@ -13,6 +13,7 @@ const TYPE_LABEL: Record<SearchResult["type"], string> = {
   news: "News",
   event: "Events",
   product: "Store",
+  resource: "Library",
 };
 
 interface Props {

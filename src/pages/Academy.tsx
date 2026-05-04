@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CourseCard } from "@/components/academy/CourseCard";
 import { academyApi } from "@/lib/academyApi";
+import { useInstructorStore } from "@/lib/instructorStore";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Academy() {
   const { t } = useTranslation();
@@ -23,7 +25,7 @@ export default function Academy() {
 
   // Debounce search
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       setDebouncedSearch(searchQuery);
       setPage(1);
     }, 500);
@@ -46,6 +48,49 @@ export default function Academy() {
       pageSize: 9
     }),
   });
+
+  const { courses: instructorCourses } = useInstructorStore();
+  const { user } = useAuth();
+
+  // Merge API courses with local instructor courses
+  const allCourses = (() => {
+    if (!coursesData?.items) return [];
+    
+    // Map instructor courses to match Course interface
+    const mappedInstructor = instructorCourses.map(c => ({
+      id: c.id,
+      title: c.title,
+      slug: c.id,
+      excerpt: c.description,
+      thumbnail: c.thumbnail || "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=400",
+      category: c.category,
+      level: c.level,
+      instructor: {
+        name: user?.username || "قائد كشفي",
+        role: "مدرب معتمد",
+        avatar: user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=instructor"
+      },
+      stats: {
+        students: 0,
+        rating: 5,
+        lessons: c.lessons.length,
+        duration: "0"
+      },
+      isPremium: false,
+      price: 0,
+      createdAt: c.createdAt
+    }));
+
+    const combined = [...mappedInstructor, ...coursesData.items];
+    
+    // Simple filter for the combined list
+    return combined.filter(c => {
+      const matchSearch = !debouncedSearch || c.title.toLowerCase().includes(debouncedSearch.toLowerCase());
+      const matchCat = selectedCategory === "all" || c.category === selectedCategory;
+      const matchLevel = selectedLevel === "all" || c.level === selectedLevel;
+      return matchSearch && matchCat && matchLevel;
+    });
+  })();
 
   const { data: featuredData } = useQuery({
     queryKey: ["academyFeaturedCourses"],
@@ -256,7 +301,7 @@ export default function Academy() {
           ) : coursesData?.items && coursesData.items.length > 0 ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 mb-12">
-                {coursesData.items.map((course, i) => (
+                {allCourses.map((course, i) => (
                   <CourseCard key={course.id} course={course} index={i} />
                 ))}
               </div>

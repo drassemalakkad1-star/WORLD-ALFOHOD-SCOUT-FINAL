@@ -2,10 +2,11 @@ import { news } from "@/data/news";
 import { products } from "@/data/products";
 import { ACADEMY_COURSES } from "@/data/academyCourses";
 import { events } from "@/data/events";
+import { RESOURCES } from "@/data/resources";
 
 export type SearchResult = {
   id: string;
-  type: "course" | "game" | "news" | "product" | "event";
+  type: "course" | "game" | "news" | "product" | "event" | "resource";
   title: string;
   subtitle?: string;
   href: string;
@@ -100,6 +101,19 @@ export function searchAll(query: string, limitPerType = 4): SearchResult[] {
       subtitle: p.category,
       href: `/store/p/${p.slug}`,
       emoji: "🛍️",
+    }));
+
+  // Resources
+  RESOURCES
+    .filter(r => matches(r.title) || matches(r.description) || matches(r.category))
+    .slice(0, limitPerType)
+    .forEach(r => results.push({
+      id: r.id,
+      type: "resource",
+      title: r.title,
+      subtitle: r.category,
+      href: `/resources`,
+      emoji: "📚",
     }));
 
   return results;

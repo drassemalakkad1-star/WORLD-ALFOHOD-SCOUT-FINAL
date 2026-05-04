@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/components/auth/authContext";
 import { useToast } from "@/hooks/use-toast";
 import { academyApi } from "@/lib/academyApi";
+import { AuthGuard } from "@/components/auth/AuthGuard";
+import { useInstructorStore } from "@/lib/instructorStore";
 import NotFound from "@/pages/not-found";
 
 export default function AcademyCourse() {
@@ -25,15 +27,42 @@ export default function AcademyCourse() {
 
   const [activeTab, setActiveTab] = useState("overview");
 
-  const { data: course, isLoading, isError } = useQuery({
+  const { getCourseById } = useInstructorStore();
+
+  const { data: apiCourse, isLoading: isLoadingApi, isError } = useQuery({
     queryKey: ["academyCourse", slug],
     queryFn: () => academyApi.getCourse(slug),
     enabled: !!slug,
+    retry: false
   });
+
+  const localCourse = getCourseById(slug);
+  const course = apiCourse || (localCourse ? {
+    ...localCourse,
+    subtitle: localCourse.description.substring(0, 100),
+    longDescription: localCourse.description,
+    rating: 5.0,
+    enrolledCount: 120,
+    duration: "غير محدد",
+    lessonsCount: localCourse.lessons.length,
+    instructor: {
+      name: authState.user?.username || "قائد كشفي",
+      title: "مدرب معتمد",
+      bio: "خبير في التدريب الكشفي والإرشادي.",
+      avatarColor: "#004225"
+    },
+    skills: ["القيادة", "العمل الجماعي"],
+    isFree: true,
+    price: 0,
+    certificate: true,
+    coverColor: localCourse.thumbnail || "#004225"
+  } : null);
+
+  const isLoading = isLoadingApi && !localCourse;
 
   const { data: enrollments, isLoading: isLoadingEnrollments } = useQuery({
     queryKey: ["academyEnrollments", authState.user?.email],
-    queryFn: () => academyApi.listMyEnrollments(authState.user!.email),
+    queryFn: () => academyApi.listMyEnrollments(authState.user?.email || ""),
     enabled: !!authState.user?.email,
   });
 
@@ -41,7 +70,7 @@ export default function AcademyCourse() {
   const isEnrolled = !!enrollment;
 
   const enrollMutation = useMutation({
-    mutationFn: () => academyApi.enrollInCourse(slug, authState.user!.email),
+    mutationFn: () => academyApi.enrollInCourse(slug, authState.user?.email || ""),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["academyEnrollments"] });
       toast({
@@ -99,6 +128,7 @@ export default function AcademyCourse() {
 
   return (
     <SiteLayout>
+      <AuthGuard title="أكاديمية الكشافة" description="يرجى تسجيل الدخول للوصول إلى المسارات التعليمية والتسجيل في الدورات.">
       {/* Course Hero */}
       <section className="bg-primary text-white pt-24 pb-12 md:pt-32 md:pb-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-l from-primary via-primary to-primary/80 z-0" />
@@ -422,6 +452,7 @@ export default function AcademyCourse() {
         </section>
       )}
 
+      </AuthGuard>
     </SiteLayout>
   );
 }

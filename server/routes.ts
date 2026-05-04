@@ -1,15 +1,20 @@
 import { Router } from "express";
 import { storage } from "./storage";
-import { requireAuth } from "./auth";
+import { requireAuth, requireAdmin } from "./auth";
 import {
   insertUserSchema, loginSchema, insertOrderSchema,
   insertProgressSchema, insertLeaderboardSchema, insertContactSchema,
   userPreferencesSchema,
+  insertNewsSchema, insertProductSchema, insertAcademyCourseSchema,
+  insertYoutubeChannelSchema, insertYoutubeVideoSchema,
+  insertSupportRequestSchema
 } from "../shared/schema";
 import { ZodError } from "zod";
 
 export function buildRoutes() {
   const r = Router();
+
+  r.get("/health", (_req, res) => res.json({ status: "ok" }));
 
   function handleError(res: any, err: unknown) {
     if (err instanceof ZodError) {
@@ -106,22 +111,24 @@ export function buildRoutes() {
     } catch (e) { handleError(res, e); }
   });
 
-  r.delete("/leaderboard/:gameKey", async (req, res) => {
+  // ===== Contact =====
+  r.post("/contact", async (req, res) => {
     try {
-      await storage.clearLeaderboardByGame(req.params.gameKey);
-      res.json({ ok: true });
+      const data = insertContactSchema.parse(req.body);
+      const msg = await storage.createContact(data);
+      res.status(201).json({ message: msg });
     } catch (e) { handleError(res, e); }
   });
 
-  // ===== User Preferences (auto-sync from i18n / a11y / theme) =====
-  r.get("/preferences", requireAuth, async (req, res) => {
+  // ===== User Preferences =====
+  r.get("/user/preferences", requireAuth, async (req, res) => {
     try {
       const prefs = await storage.getUserPreferences(req.session.userId!);
       res.json({ preferences: prefs });
     } catch (e) { handleError(res, e); }
   });
 
-  r.put("/preferences", requireAuth, async (req, res) => {
+  r.patch("/user/preferences", requireAuth, async (req, res) => {
     try {
       const data = userPreferencesSchema.parse(req.body);
       const prefs = await storage.upsertUserPreferences(req.session.userId!, data);
@@ -129,17 +136,128 @@ export function buildRoutes() {
     } catch (e) { handleError(res, e); }
   });
 
-  // ===== Health (used by self-healing client) =====
-  r.get("/health", (_req, res) => {
-    res.json({ ok: true, ts: Date.now() });
+  // ===== Admin: Users =====
+  r.get("/admin/users", requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.listUsers();
+      res.json({ users });
+    } catch (e) { handleError(res, e); }
   });
 
-  // ===== Contact =====
-  r.post("/contact", async (req, res) => {
+  r.patch("/admin/users/:id/role", requireAdmin, async (req, res) => {
     try {
-      const data = insertContactSchema.parse(req.body);
-      const row = await storage.createContact(data);
-      res.status(201).json({ message: row });
+      const userId = parseInt(String(req.params.id));
+      const { role } = req.body;
+      const user = await storage.updateUserRole(userId, role);
+      res.json({ user });
+    } catch (e) { handleError(res, e); }
+  });
+
+  // ===== Admin: Stats (New) =====
+  r.get("/admin/stats", requireAdmin, async (req, res) => {
+    try {
+      const [users, newsList, productsList, coursesList] = await Promise.all([
+        storage.listUsers(),
+        storage.listNews(),
+        storage.listProducts(),
+        storage.listCourses(),
+      ]);
+      res.json({
+        totalUsers: users.length,
+        totalNews: newsList.length,
+        totalProducts: productsList.length,
+        totalCourses: coursesList.length,
+      });
+    } catch (e) { handleError(res, e); }
+  });
+
+  // ===== Admin: News =====
+  r.get("/admin/news", requireAdmin, async (req, res) => {
+    try { res.json({ news: await storage.listNews() }); } catch (e) { handleError(res, e); }
+  });
+  r.post("/admin/news", requireAdmin, async (req, res) => {
+    try { res.status(201).json({ article: await storage.createNews(insertNewsSchema.parse(req.body)) }); } catch (e) { handleError(res, e); }
+  });
+  r.patch("/admin/news/:id", requireAdmin, async (req, res) => {
+    try { res.json({ article: await storage.updateNews(parseInt(String(req.params.id)), req.body) }); } catch (e) { handleError(res, e); }
+  });
+  r.delete("/admin/news/:id", requireAdmin, async (req, res) => {
+    try { await storage.deleteNews(parseInt(String(req.params.id))); res.status(204).end(); } catch (e) { handleError(res, e); }
+  });
+
+  // ===== Admin: Products =====
+  r.get("/admin/products", requireAdmin, async (req, res) => {
+    try { res.json({ products: await storage.listProducts() }); } catch (e) { handleError(res, e); }
+  });
+  r.post("/admin/products", requireAdmin, async (req, res) => {
+    try { res.status(201).json({ product: await storage.createProduct(insertProductSchema.parse(req.body)) }); } catch (e) { handleError(res, e); }
+  });
+  r.patch("/admin/products/:id", requireAdmin, async (req, res) => {
+    try { res.json({ product: await storage.updateProduct(parseInt(String(req.params.id)), req.body) }); } catch (e) { handleError(res, e); }
+  });
+  r.delete("/admin/products/:id", requireAdmin, async (req, res) => {
+    try { await storage.deleteProduct(parseInt(String(req.params.id))); res.status(204).end(); } catch (e) { handleError(res, e); }
+  });
+
+  // ===== Admin: Academy =====
+  r.get("/admin/courses", requireAdmin, async (req, res) => {
+    try { res.json({ courses: await storage.listCourses() }); } catch (e) { handleError(res, e); }
+  });
+  r.post("/admin/courses", requireAdmin, async (req, res) => {
+    try { res.status(201).json({ course: await storage.createCourse(insertAcademyCourseSchema.parse(req.body)) }); } catch (e) { handleError(res, e); }
+  });
+  r.patch("/admin/courses/:id", requireAdmin, async (req, res) => {
+    try { res.json({ course: await storage.updateCourse(parseInt(String(req.params.id)), req.body) }); } catch (e) { handleError(res, e); }
+  });
+  r.delete("/admin/courses/:id", requireAdmin, async (req, res) => {
+    try { await storage.deleteCourse(parseInt(String(req.params.id))); res.status(204).end(); } catch (e) { handleError(res, e); }
+  });
+
+  // ===== YouTube API =====
+  r.get("/youtube/channels", async (req, res) => {
+    try { res.json({ channels: await storage.listYoutubeChannels() }); } catch (e) { handleError(res, e); }
+  });
+
+  r.get("/youtube/videos", async (req, res) => {
+    try { res.json({ videos: await storage.listYoutubeVideos(req.query.channelId as string) }); } catch (e) { handleError(res, e); }
+  });
+
+  r.post("/admin/youtube/channels", requireAdmin, async (req, res) => {
+    try {
+      const channel = await storage.createYoutubeChannel(insertYoutubeChannelSchema.parse(req.body));
+      res.status(201).json({ channel });
+    } catch (e) { handleError(res, e); }
+  });
+
+  r.delete("/admin/youtube/channels/:id", requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteYoutubeChannel(parseInt(String(req.params.id)));
+      res.status(204).end();
+    } catch (e) { handleError(res, e); }
+  });
+
+  r.post("/admin/youtube/sync/:channelId", requireAdmin, async (req, res) => {
+    try {
+      const { channelId } = req.params;
+      const { videos } = req.body;
+      if (!Array.isArray(videos)) throw new Error("قائمة الفيديوهات غير صالحة");
+      
+      const parsedVideos = videos.map((v: any) => insertYoutubeVideoSchema.parse({
+        ...v,
+        channelId
+      }));
+      
+      await storage.syncYoutubeVideos(String(channelId), parsedVideos);
+      res.json({ ok: true, count: parsedVideos.length });
+    } catch (e) { handleError(res, e); }
+  });
+
+  // ===== Support Requests (Solidarity Store) =====
+  r.post("/support-requests", async (req, res) => {
+    try {
+      const data = insertSupportRequestSchema.parse(req.body);
+      const row = await storage.createSupportRequest(data, req.session.userId ?? null);
+      res.status(201).json({ request: row });
     } catch (e) { handleError(res, e); }
   });
 

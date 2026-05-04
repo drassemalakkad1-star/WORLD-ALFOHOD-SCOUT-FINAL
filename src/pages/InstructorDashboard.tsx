@@ -13,6 +13,7 @@ import {
 
 import { SiteLayout } from "@/components/layout/SiteLayout";
 import { useAuth } from "@/components/auth/authContext";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -611,23 +612,6 @@ export default function InstructorDashboard() {
     );
   }
 
-  if (!authState.user) {
-    return (
-      <SiteLayout>
-        <div className="min-h-screen flex flex-col items-center justify-center gap-6 text-center px-4">
-          <GraduationCap className="h-20 w-20 text-primary/30" />
-          <h2 className="text-3xl font-black text-primary">لوحة قيادة المدرّب</h2>
-          <p className="text-muted-foreground max-w-md">يجب تسجيل الدخول للوصول إلى لوحة التحكم.</p>
-          <Link href="/login">
-            <Button size="lg" className="bg-primary text-white hover:bg-primary/90 rounded-full px-8">
-              تسجيل الدخول
-            </Button>
-          </Link>
-        </div>
-      </SiteLayout>
-    );
-  }
-
   const totalEnrollments = courses.reduce((s, c) => s + c.enrolledCount, 0);
   const published = courses.filter(c => c.status === "published").length;
   const drafts = courses.filter(c => c.status === "draft").length;
@@ -672,6 +656,7 @@ export default function InstructorDashboard() {
 
   return (
     <SiteLayout>
+      <AuthGuard title="لوحة قيادة المدرّب" description="يجب تسجيل الدخول للوصول إلى لوحة التحكم.">
       <div className="min-h-screen bg-background" dir="rtl">
         {/* Page header */}
         <div className="bg-primary text-white py-12">
@@ -916,6 +901,7 @@ export default function InstructorDashboard() {
           </AnimatePresence>
         </div>
       </div>
+      </AuthGuard>
     </SiteLayout>
   );
 }

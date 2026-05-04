@@ -40,8 +40,201 @@
     "cart": "Cart",
     "menu": "Menu"
   },
+  "about": {
+    "title": "About Us",
+    "subtitle": "A global youth movement aimed at empowering youth and building future leaders.",
+    "historyTitle": "History of the Movement",
+    "historyDesc": "Founded in 1907, the original scouting movement transformed into the World Alfohod Scout and Guide over a century-long journey, with one goal: to leave the world better than we found it.",
+    "leadershipTitle": "Leadership Team",
+    "reportsTitle": "Annual Reports",
+    "reportsDesc": "We are committed to full transparency in all our work. Read our annual reports to learn more about our financial and community impact.",
+    "report2023": "2023 Report",
+    "report2022": "2022 Report"
+  },
+  "whatWeDo": {
+    "title": "What We Do",
+    "subtitle": "Our programs and initiatives are designed to develop youth skills and empower them.",
+    "explore": "Explore Programme",
+    "programmes": {
+      "adventure": "Adventure Education",
+      "peace": "Peace & Citizenship",
+      "earth": "Environment & Earth Tribe",
+      "leadership": "Youth Leadership",
+      "service": "Community Service",
+      "gender": "Gender Equality"
+    }
+  },
   "academy": {
-    "title": "World Alfohod Academy",
-    "subtitle": "Learn. Lead. Inspire."
+    "title": "Al-Fahoud Academy",
+    "subtitle": "Learn. Lead. Inspire.",
+    "heroBadge": "E-Learning Platform",
+    "heroTitle": "Learn. Grow. Lead.",
+    "heroDesc": "An integrated educational platform offering training courses in various scouting areas to develop your skills and build leadership capacities.",
+    "browseCourses": "Browse Courses",
+    "learnHow": "Learn How We Work",
+    "stats": {
+      "courses": "Courses",
+      "students": "Students",
+      "certs": "Certificates"
+    },
+    "features": {
+      "title": "Why the Academy?",
+      "subtitle": "We designed a unique learning experience that meets the needs of scouts and leaders.",
+      "certs": { "title": "Certified Certificates", "desc": "Get certified completion certificates added to your scouting record." },
+      "experts": { "title": "Expert Instructors", "desc": "Learn directly from scouting leaders with years of field experience." },
+      "interactive": { "title": "Interactive Content", "desc": "Visual, readable lessons and interactive tests ensure concept mastery." }
+    },
+    "popularCourses": "Most Popular Courses",
+    "exploreCourses": "Explore Courses",
+    "searchPlaceholder": "Search for a course, skill, or topic...",
+    "all": "All",
+    "level": "Level",
+    "allLevels": "All Levels",
+    "sort": "Sort",
+    "newest": "Newest",
+    "popular": "Most Popular",
+    "rating": "Highest Rated",
+    "noCourses": "No Matching Courses",
+    "noCoursesDesc": "We couldn't find any courses matching your search criteria. Try changing filters or search terms.",
+    "clearFilters": "Clear Filters",
+    "beInstructor": "Be an Instructor",
+    "beInstructorDesc": "Share your scouting expertise with thousands of members. We are always looking for inspiring leaders.",
+    "contactInstructor": "Contact Us to Train",
+    "next": "Next",
+    "prev": "Previous",
+    "of": "of"
+  },
+  "home": {
+    "hero": {
+      "badge": "Global Youth Movement",
+      "title1": "Shaping the",
+      "title2": "Leaders",
+      "title3": "of Tomorrow",
+      "subtitle": "A transformative educational community for youth worldwide. We are fast, focused, brave, and agile — just like the Cheetah.",
+      "ctaJoin": "Join the Movement",
+      "ctaExplore": "Explore Global Camp"
+    },
+    "stats": {
+      "moreThan": "More than",
+      "activeScouts": "Active Scouts",
+      "countries": "Countries",
+      "volunteers": "Volunteers",
+      "annualEvents": "Annual Events"
+    },
+    "pillars": {
+      "title": "Pillars of Scouting",
+      "subtitle": "We don't just offer activities; we build a complete personality capable of facing future challenges.",
+      "leadership": {
+        "title": "Leadership & Influence",
+        "desc": "We empower youth to take initiative and lead positive change in their communities through modern leadership skills."
+      },
+      "community": {
+        "title": "Community Service",
+        "desc": "We believe service is the core of scouting, working to foster volunteerism and good citizenship."
+      },
+      "skills": {
+        "title": "Skill Development",
+        "desc": "Diverse training programs covering life, technical, and field skills to build a capable generation."
+      },
+      "values": {
+        "title": "Values & Principles",
+        "desc": "We instill global scouting values: honesty, loyalty, nobility, and human brotherhood."
+      }
+    },
+    "store": {
+      "title1": "Cheetahs",
+      "title2": "Store",
+      "subtitle": "Get official uniforms, badges, and exclusive gear.",
+      "cta": "Browse Store"
+    },
+    "videos": {
+      "title1": "Video",
+      "title2": "Library",
+      "subtitle": "Watch success stories and adventures from around the world.",
+      "cta": "More Videos"
+    },
+    "events": {
+      "title1": "Upcoming",
+      "title2": "Events",
+      "subtitle": "Don't miss the chance to participate in the most important local and global events.",
+      "cta": "All Events"
+    },
+    "donate": {
+      "title": "Contribute to building future leaders",
+      "subtitle": "Your donation makes a real difference in the lives of thousands of young people around the world.",
+      "cta": "Donate Now"
+    },
+    "jamboree": {
+      "badge": "Biggest Event of the Year",
+      "title1": "World Scout",
+      "title2": "Jamboree 2025",
+      "date": "August 12 - 24, 2025",
+      "location": "Tokyo, Japan",
+      "desc": "Join over 50,000 young people from around the world in an extraordinary experience to celebrate diversity, build friendships, and make memories that last a lifetime.",
+      "cta": "Register for Jamboree"
+    },
+    "peopleOfDetermination": {
+      "badge": "Inclusion & Empowerment",
+      "title1": "Scouting for",
+      "title2": "All",
+      "title3": "People of Determination — Our Real Heroes",
+      "subtitle": "At World Alfohod Scouting, we believe everyone — regardless of their abilities — deserves a complete scouting experience. We design our programs to be inclusive and empowering for every individual.",
+      "signLanguageTitle": "Sign Language",
+      "signLanguageSubtitle": "Learn with us through sign",
+      "signLanguageDesc": "Let's learn some basic words in Arabic Sign Language. Communication is a right for all.",
+      "signLanguageCertified": "All our events include certified sign language interpreters",
+      "commitmentTitle": "Our Commitment to Full Inclusion",
+      "commitmentDesc": "We have dedicated programs that respect individual needs, and a modified scouting curriculum that gives everyone a chance to grow and excel.",
+      "cta": "Join Program for PoD",
+      "words": {
+        "hello": "Hello",
+        "love": "I Love You",
+        "yes": "Yes",
+        "scout": "Scouts",
+        "fine": "I'm Fine",
+        "thanks": "Thank You"
+      },
+      "features": {
+        "sign": { "title": "Sign Language", "desc": "All our programs are supported by certified sign language interpreters." },
+        "visual": { "title": "Visual Accessibility", "desc": "Screen reader compatible digital content and appropriate lighting." },
+        "hearing": { "title": "Hearing Support", "desc": "Sound amplification devices and FM systems available at all events." },
+        "teams": { "title": "Specialized Teams", "desc": "Specially trained leaders to support people of determination." }
+      },
+      "stats": {
+        "scouts": "Scouts with Disabilities",
+        "inclusive": "Inclusive Events",
+        "translators": "Sign Interpreters",
+        "programs": "Custom Programs"
+      }
+    },
+    "join": {
+      "title": "Ready to start your scouting adventure?",
+      "subtitle": "Join over 57 million scouts worldwide in a journey of self-discovery and community service.",
+      "ctaJoin": "Join Now",
+      "ctaVolunteer": "Become a Volunteer"
+    }
+  },
+  "library": {
+    "title": "Resources & Library",
+    "subtitle": "Discover scouting guides, educational materials, and professional reports.",
+    "search": "Search in library...",
+    "all": "All",
+    "guides": "Guides",
+    "reports": "Reports",
+    "infographics": "Infographics",
+    "manuals": "Manuals",
+    "preview": "View",
+    "download": "Download",
+    "share": "Share",
+    "copyLink": "Copy Link",
+    "linkCopied": "Link copied successfully",
+    "viewOnly": "View only",
+    "noResults": "No resources found matching your search.",
+    "back": "Back",
+    "folders": "Categories",
+    "files": "Files",
+    "items": "Items",
+    "viewGallery": "View Gallery",
+    "close": "Close"
   }
 }

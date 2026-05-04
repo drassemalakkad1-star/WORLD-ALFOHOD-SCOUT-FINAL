@@ -1,4 +1,4 @@
-import { Header } from "./Header";
+import { SiteLayout } from "@/components/layout/SiteLayout";
 import { Hero } from "./Hero";
 import { Stats } from "./Stats";
 import { Pillars } from "./Pillars";
@@ -6,33 +6,40 @@ import { PeopleOfDetermination } from "./PeopleOfDetermination";
 import { FeaturedStories } from "./FeaturedStories";
 import { Jamboree } from "./Jamboree";
 import { JoinSection } from "./JoinSection";
-import { Footer } from "./Footer";
 import { Link } from "wouter";
-import { ArrowLeft, PlayCircle, Calendar } from "lucide-react";
+import { ArrowLeft, ArrowRight, PlayCircle, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { products } from "@/data/products";
 import { videos } from "@/data/videos";
 import { events } from "@/data/events";
 import { ProductCard } from "@/components/store/ProductCard";
 import { VideoCard } from "@/components/videos/VideoCard";
+import { useTranslation } from "react-i18next";
 
 function StorePreview() {
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.dir() === "rtl";
+
   return (
     <section className="py-24 bg-muted/10">
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
           <div className="max-w-2xl">
             <h2 className="text-4xl md:text-5xl font-black text-primary mb-6">
-              متجر <span className="text-secondary">الفهود</span>
+              {t('home.store.title1')} <span className="text-secondary">{t('home.store.title2')}</span>
             </h2>
             <p className="text-xl text-muted-foreground font-medium">
-              احصل على الزي الرسمي، الشارات، والأدوات الحصرية.
+              {t('home.store.subtitle')}
             </p>
           </div>
           <Link href="/store">
             <Button variant="ghost" className="text-xl font-bold text-primary hover:text-secondary group">
-              تصفح المتجر
-              <ArrowLeft className="ml-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+              {t('home.store.cta')}
+              {isRtl ? (
+                <ArrowLeft className="ml-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+              ) : (
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              )}
             </Button>
           </Link>
         </div>
@@ -47,23 +54,30 @@ function StorePreview() {
 }
 
 function VideoPreview() {
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.dir() === "rtl";
   const featured = videos[0];
+
   return (
     <section className="py-24 bg-primary text-white">
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
           <div className="max-w-2xl">
             <h2 className="text-4xl md:text-5xl font-black mb-6">
-              مكتبة <span className="text-secondary">الفيديوهات</span>
+              {t('home.videos.title1')} <span className="text-secondary">{t('home.videos.title2')}</span>
             </h2>
             <p className="text-xl text-white/80 font-medium">
-              شاهد قصص النجاح والمغامرات من حول العالم.
+              {t('home.videos.subtitle')}
             </p>
           </div>
           <Link href="/videos">
             <Button variant="ghost" className="text-xl font-bold text-white hover:text-secondary group hover:bg-white/10">
-              المزيد من الفيديوهات
-              <ArrowLeft className="ml-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+              {t('home.videos.cta')}
+              {isRtl ? (
+                <ArrowLeft className="ml-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+              ) : (
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              )}
             </Button>
           </Link>
         </div>
@@ -92,22 +106,29 @@ function VideoPreview() {
 }
 
 function EventsPreview() {
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.dir() === "rtl";
+
   return (
     <section className="py-24 bg-background">
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
           <div className="max-w-2xl">
             <h2 className="text-4xl md:text-5xl font-black text-primary mb-6">
-              الفعاليات <span className="text-secondary">القادمة</span>
+              {t('home.events.title1')} <span className="text-secondary">{t('home.events.title2')}</span>
             </h2>
             <p className="text-xl text-muted-foreground font-medium">
-              لا تفوت فرصة المشاركة في أهم الأحداث المحلية والعالمية.
+              {t('home.events.subtitle')}
             </p>
           </div>
           <Link href="/events">
             <Button variant="ghost" className="text-xl font-bold text-primary hover:text-secondary group">
-              كل الفعاليات
-              <ArrowLeft className="ml-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+              {t('home.events.cta')}
+              {isRtl ? (
+                <ArrowLeft className="ml-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+              ) : (
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              )}
             </Button>
           </Link>
         </div>
@@ -138,17 +159,18 @@ function EventsPreview() {
 }
 
 function DonateBanner() {
+  const { t } = useTranslation();
   return (
     <section className="py-20 bg-secondary text-white text-center relative overflow-hidden">
       <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.1)_50%,transparent_75%)] bg-[length:20px_20px]" />
       <div className="container relative z-10 mx-auto px-4 md:px-8">
-        <h2 className="text-4xl md:text-5xl font-black mb-6">ساهم في بناء قادة المستقبل</h2>
+        <h2 className="text-4xl md:text-5xl font-black mb-6">{t('home.donate.title')}</h2>
         <p className="text-xl font-medium mb-10 max-w-2xl mx-auto">
-          تبرعك يصنع فرقاً حقيقياً في حياة آلاف الشباب حول العالم.
+          {t('home.donate.subtitle')}
         </p>
         <Link href="/donate">
           <Button size="lg" className="h-16 px-10 text-xl font-bold bg-white text-secondary hover:bg-white/90 rounded-full shadow-xl hover:shadow-2xl transition-all">
-            تبرع الآن
+            {t('home.donate.cta')}
           </Button>
         </Link>
       </div>
@@ -158,22 +180,19 @@ function DonateBanner() {
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col bg-background font-sans selection:bg-secondary selection:text-white">
-      <Header />
-      <main className="flex-1">
-        <Hero />
-        <Stats />
-        <Pillars />
-        <PeopleOfDetermination />
-        <Jamboree />
-        <FeaturedStories />
-        <VideoPreview />
-        <StorePreview />
-        <EventsPreview />
-        <DonateBanner />
-        <JoinSection />
-      </main>
-      <Footer />
-    </div>
+    <SiteLayout>
+      <Hero />
+      <Stats />
+      <Pillars />
+      <PeopleOfDetermination />
+      <Jamboree />
+      <FeaturedStories />
+      <VideoPreview />
+      <StorePreview />
+      <EventsPreview />
+      <DonateBanner />
+      <JoinSection />
+    </SiteLayout>
   );
 }
+

@@ -101,20 +101,19 @@ export function LiveActivityFeed({
 
   useEffect(() => {
     if (!enabled || dismissed) return;
-    const start = setTimeout(() => {
+
+    let intervalId: NodeJS.Timeout | null = null;
+    const timeoutId = setTimeout(() => {
       setCurrent(makeActivity());
-      const t = setInterval(() => {
+      intervalId = setInterval(() => {
         setCurrent(null);
         setTimeout(() => setCurrent(makeActivity()), 350);
       }, intervalMs);
-      // store cleanup
-      (start as any)._intv = t;
     }, initialDelayMs);
 
     return () => {
-      const t = (start as any)._intv;
-      if (t) clearInterval(t);
-      clearTimeout(start);
+      if (intervalId) clearInterval(intervalId);
+      clearTimeout(timeoutId);
     };
   }, [enabled, dismissed, intervalMs, initialDelayMs]);
 

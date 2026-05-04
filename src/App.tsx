@@ -33,6 +33,7 @@ const Videos = lazy(() => import("@/pages/Videos"));
 const Store = lazy(() => import("@/pages/Store"));
 const StoreCollection = lazy(() => import("@/pages/StoreCollection"));
 const ProductDetail = lazy(() => import("@/pages/ProductDetail"));
+const SolidarityStore = lazy(() => import("@/pages/SolidarityStore"));
 const Checkout = lazy(() => import("@/pages/Checkout"));
 const GetInvolved = lazy(() => import("@/pages/GetInvolved"));
 const JoinRole = lazy(() => import("@/pages/JoinRole"));
@@ -49,8 +50,10 @@ const Academy = lazy(() => import("@/pages/Academy"));
 const AcademyCourse = lazy(() => import("@/pages/AcademyCourse"));
 const AcademyLearn = lazy(() => import("@/pages/AcademyLearn"));
 const InstructorDashboard = lazy(() => import("@/pages/InstructorDashboard"));
+const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const Terms = lazy(() => import("@/pages/Terms"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
+const HallOfFame = lazy(() => import("@/pages/HallOfFame"));
 
 function RouteFallback() {
   return (
@@ -83,6 +86,7 @@ function Router() {
         <Route path="/store" component={Store} />
         <Route path="/store/c/:slug" component={StoreCollection} />
         <Route path="/store/p/:slug" component={ProductDetail} />
+        <Route path="/solidarity" component={SolidarityStore} />
         <Route path="/checkout" component={Checkout} />
         <Route path="/academy" component={Academy} />
         <Route path="/academy/c/:slug" component={AcademyCourse} />
@@ -99,8 +103,10 @@ function Router() {
         <Route path="/verify-email" component={VerifyEmail} />
         <Route path="/account" component={Account} />
         <Route path="/instructor" component={InstructorDashboard} />
+        <Route path="/admin" component={AdminDashboard} />
         <Route path="/terms" component={Terms} />
         <Route path="/privacy" component={Privacy} />
+        <Route path="/hall-of-fame" component={HallOfFame} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>

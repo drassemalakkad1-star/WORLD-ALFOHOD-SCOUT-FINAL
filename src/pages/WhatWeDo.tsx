@@ -2,25 +2,29 @@ import { SiteLayout } from "@/components/layout/SiteLayout";
 import { PageHero } from "@/components/layout/PageHero";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Compass, Heart, Sprout, Shield, Users, Scale } from "lucide-react";
-
-const programmes = [
-  { slug: "adventure-education", title: "التعليم من خلال المغامرة", icon: Compass },
-  { slug: "messengers-of-peace", title: "السلام والمواطنة", icon: Heart },
-  { slug: "earth-tribe", title: "البيئة وقبيلة الأرض", icon: Sprout },
-  { slug: "youth-leadership", title: "القيادة الشبابية", icon: Shield },
-  { slug: "community-service", title: "الخدمة المجتمعية", icon: Users },
-  { slug: "gender-equality", title: "المساواة بين الجنسين", icon: Scale },
-];
+import { ArrowLeft, ArrowRight, Compass, Heart, Sprout, Shield, Users, Scale } from "lucide-react";
 
 export default function WhatWeDo() {
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.dir() === "rtl";
+
+  const programmes = [
+    { slug: "adventure-education", title: t('whatWeDo.programmes.adventure'), icon: Compass },
+    { slug: "messengers-of-peace", title: t('whatWeDo.programmes.peace'), icon: Heart },
+    { slug: "earth-tribe", title: t('whatWeDo.programmes.earth'), icon: Sprout },
+    { slug: "youth-leadership", title: t('whatWeDo.programmes.leadership'), icon: Shield },
+    { slug: "community-service", title: t('whatWeDo.programmes.service'), icon: Users },
+    { slug: "gender-equality", title: t('whatWeDo.programmes.gender'), icon: Scale },
+  ];
+
   return (
     <SiteLayout>
       <PageHero
-        title="ما نقوم به"
-        description="برامجنا ومبادراتنا مصممة لتطوير مهارات الشباب وتمكينهم."
-        breadcrumbs={[{ label: "ما نقوم به", href: "/what-we-do" }]}
+        title={t('whatWeDo.title')}
+        description={t('whatWeDo.subtitle')}
+        breadcrumbs={[{ label: t('whatWeDo.title'), href: "/what-we-do" }]}
       />
       
       <section className="py-20 bg-muted/20">
@@ -44,8 +48,12 @@ export default function WhatWeDo() {
                         </div>
                         <h3 className="text-2xl font-bold text-primary mb-4 group-hover:text-secondary transition-colors">{prog.title}</h3>
                         <div className="inline-flex items-center text-primary font-bold hover:text-secondary transition-colors mt-4">
-                          اكتشف البرنامج
-                          <ArrowLeft className="mr-2 h-5 w-5" />
+                          {t('whatWeDo.explore')}
+                          {isRtl ? (
+                             <ArrowLeft className="mr-2 h-5 w-5 group-hover:-translate-x-1 transition-transform" />
+                          ) : (
+                             <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                          )}
                         </div>
                       </CardContent>
                     </Link>

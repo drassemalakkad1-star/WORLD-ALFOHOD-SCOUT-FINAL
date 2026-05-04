@@ -3,6 +3,7 @@ import { useLocation, Link } from "wouter";
 import { useCart } from "@/components/store/cartContext";
 import { useAuth } from "@/components/auth/authContext";
 import { OrderSummary } from "@/components/store/OrderSummary";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -331,6 +332,7 @@ export default function Checkout() {
 
   return (
     <CheckoutShell>
+      <AuthGuard title="إتمام الشراء" description="يرجى تسجيل الدخول أو إنشاء حساب لمتابعة عملية الشراء وتأكيد طلبك.">
       {isProcessing && (
         <div className="fixed inset-0 z-[100] bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center">
           <Loader2 className="h-16 w-16 text-primary animate-spin mb-6" />
@@ -847,6 +849,7 @@ export default function Checkout() {
           </motion.div>
         )}
       </AnimatePresence>
+      </AuthGuard>
     </CheckoutShell>
   );
 }

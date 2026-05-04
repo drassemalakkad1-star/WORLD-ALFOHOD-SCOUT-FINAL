@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "الاسم مطلوب" }),
@@ -31,12 +33,25 @@ export function JoinForm({ role }: JoinFormProps) {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    toast({
-      title: "تم استلام طلبك",
-      description: "سيقوم فريقنا بالتواصل معك قريباً لإكمال عملية التسجيل.",
-    });
-    form.reset();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      await apiRequest("POST", "/api/contact", {
+        ...values,
+        subject: `طلب انضمام: ${role}`,
+        message: `طلب انضمام جديد لدور: ${role}. الاسم: ${values.name}, الهاتف: ${values.phone}`
+      });
+      toast({
+        title: "تم استلام طلبك",
+        description: "سيقوم فريقنا بالتواصل معك قريباً لإكمال عملية التسجيل.",
+      });
+      form.reset();
+    } catch (err) {
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء إرسال الطلب. يرجى المحاولة لاحقاً.",
+        variant: "destructive"
+      });
+    }
   }
 
   return (

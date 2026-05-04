@@ -17,7 +17,8 @@ import {
   MessageSquare,
   Send,
   Mail,
-  Loader2
+  Loader2,
+  BellRing
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useQuery } from "@tanstack/react-query";
 import { getNewsBySlug, urlFor } from "@/lib/sanityClient";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 
 
@@ -80,10 +82,10 @@ export default function ArticleDetail() {
     .filter(n => n.category === article.category && n.id !== article.id)
     .slice(0, 3);
 
-  const paragraphs = article.content.split('\n\n');
+  const paragraphs = (article?.content || "").split('\n\n');
   // Extract pull quote from second paragraph if it exists, otherwise first
-  const pullQuoteSrc = paragraphs.length > 1 ? paragraphs[1] : paragraphs[0];
-  const pullQuote = pullQuoteSrc.split('.')[0] + '.';
+  const pullQuoteSrc = paragraphs.length > 1 ? paragraphs[1] : paragraphs[0] || "";
+  const pullQuote = pullQuoteSrc ? pullQuoteSrc.split('.')[0] + '.' : "عالم الفهود";
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -138,7 +140,7 @@ export default function ArticleDetail() {
               <Badge className="bg-secondary hover:bg-secondary text-white font-bold border-none text-sm px-4 py-1">
                 {article.category}
               </Badge>
-              {article.breaking && (
+              {article?.breaking && (
                 <Badge variant="destructive" className="animate-pulse font-bold text-sm px-4 py-1">
                   عاجل
                 </Badge>
@@ -215,27 +217,27 @@ export default function ArticleDetail() {
                 <Button variant="outline" size="icon" className="rounded-full" onClick={handleCopyLink}><LinkIcon className="h-4 w-4" /></Button>
               </div>
 
-              {/* Article Body */}
-              <div className="prose prose-lg md:prose-xl prose-p:leading-[1.9] max-w-none text-foreground prose-headings:font-black prose-headings:text-primary prose-a:text-secondary prose-a:no-underline hover:prose-a:underline">
-                {paragraphs.map((paragraph, i) => {
-                  // Insert pull quote after second paragraph
-                  if (i === 2) {
-                    return (
-                      <div key={`pq-${i}`}>
-                        <blockquote className="my-12 p-8 bg-secondary/5 rounded-2xl border-r-4 border-secondary relative overflow-hidden">
-                          <div className="absolute top-4 left-4 text-9xl text-secondary/10 font-serif leading-none select-none">"</div>
-                          <p className="text-2xl md:text-3xl font-bold text-primary italic leading-relaxed relative z-10 m-0">
-                            "{pullQuote}"
-                          </p>
-                        </blockquote>
-                        <p key={i} className="text-[18px]">{paragraph}</p>
-                      </div>
-                    );
-                  }
-                  return <p key={i} className="text-[18px] mb-6">{paragraph}</p>;
-                })}
-              </div>
-              
+                {/* Article Body */}
+                <div className="prose prose-lg md:prose-xl prose-p:leading-[1.9] max-w-none text-foreground prose-headings:font-black prose-headings:text-primary prose-a:text-secondary prose-a:no-underline hover:prose-a:underline">
+                  {paragraphs.map((paragraph, i) => {
+                    // Insert pull quote after second paragraph
+                    if (i === 2) {
+                      return (
+                        <div key={`pq-${i}`}>
+                          <blockquote className="my-12 p-8 bg-secondary/5 rounded-2xl border-r-4 border-secondary relative overflow-hidden">
+                            <div className="absolute top-4 left-4 text-9xl text-secondary/10 font-serif leading-none select-none">"</div>
+                            <p className="text-2xl md:text-3xl font-bold text-primary italic leading-relaxed relative z-10 m-0">
+                              "{pullQuote}"
+                            </p>
+                          </blockquote>
+                          <p key={i} className="text-[18px]">{paragraph}</p>
+                        </div>
+                      );
+                    }
+                    return <p key={i} className="text-[18px] mb-6">{paragraph}</p>;
+                  })}
+                </div>
+                
               {/* Tags */}
               <div className="flex flex-wrap items-center gap-3 mt-16 pt-8 border-t border-border">
                 <span className="font-bold text-muted-foreground ml-2">الوسوم:</span>
@@ -253,7 +255,7 @@ export default function ArticleDetail() {
                 <div className="flex gap-4">
                   <Button 
                     variant={liked ? "default" : "outline"} 
-                    className={`gap-2 rounded-xl font-bold ${liked ? 'bg-rose-500 hover:bg-rose-600 border-none' : ''}`}
+                    className={`gap-2 rounded-xl font-bold ${liked ? 'bg-rose-500 hover:bg-rose-600 border-none text-white' : ''}`}
                     onClick={() => setLiked(!liked)}
                   >
                     <Heart className={`w-4 h-4 ${liked ? 'fill-current' : ''}`} />
@@ -261,11 +263,24 @@ export default function ArticleDetail() {
                   </Button>
                   <Button 
                     variant={saved ? "default" : "outline"} 
-                    className={`gap-2 rounded-xl font-bold ${saved ? 'bg-primary hover:bg-primary/90 border-none' : ''}`}
+                    className={`gap-2 rounded-xl font-bold ${saved ? 'bg-primary hover:bg-primary/90 border-none text-white' : ''}`}
                     onClick={() => setSaved(!saved)}
                   >
                     <Bookmark className={`w-4 h-4 ${saved ? 'fill-current' : ''}`} />
                     {saved ? 'محفوظ' : 'حفظ'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="gap-2 rounded-xl font-bold border-secondary text-secondary hover:bg-secondary hover:text-white"
+                    onClick={() => {
+                      toast({
+                        title: "تم تفعيل الإشعارات بنجاح!",
+                        description: "ستصلك أحدث الإضافات على بريدك الإلكتروني.",
+                      });
+                    }}
+                  >
+                    <BellRing className="w-4 h-4" />
+                    متابعة وتفعيل الجرس
                   </Button>
                 </div>
                 <Button variant="outline" className="gap-2 rounded-xl font-bold" onClick={handleCopyLink}>
@@ -274,72 +289,78 @@ export default function ArticleDetail() {
                 </Button>
               </div>
 
-              {/* Author Bio Card */}
-              <div className="mt-16 p-8 bg-card rounded-2xl border border-border shadow-sm flex flex-col md:flex-row items-center md:items-start gap-6">
-                <div 
-                  className="w-24 h-24 rounded-2xl text-white flex items-center justify-center font-black text-3xl shadow-lg shrink-0 rotate-3 hover:rotate-0 transition-transform"
-                  style={{ backgroundColor: article.author.avatarColor }}
-                >
-                  {article.author.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
-                </div>
-                <div className="text-center md:text-right">
-                  <h3 className="text-xl font-black text-primary mb-1">الكاتب: {article.author.name}</h3>
-                  <p className="text-secondary font-bold text-sm mb-4">{article.author.role}</p>
-                  <p className="text-muted-foreground text-sm leading-relaxed mb-4 max-w-lg">
-                    عضو في فريق الإعلام لعالم الفهود الكشفي والإرشادي، متخصص في تغطية أخبار ومبادرات الشباب وإيصال أصواتهم إلى العالم.
-                  </p>
-                  <Button variant="link" className="p-0 h-auto text-primary font-bold hover:text-secondary gap-1">
-                    عرض جميع مقالات الكاتب <LinkIcon className="w-3 h-3" />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Comments Section */}
-              <div className="mt-16 pt-16 border-t border-border">
-                <h3 className="text-2xl font-black text-primary mb-8 flex items-center gap-3">
-                  <MessageSquare className="w-6 h-6 text-secondary" />
-                  التعليقات (٣)
-                </h3>
-                
-                <form onSubmit={handleSubmitComment} className="mb-10 bg-muted/20 p-6 rounded-2xl border border-border/50">
-                  <h4 className="font-bold text-foreground mb-4">أضف تعليقاً</h4>
-                  <Textarea 
-                    placeholder="شاركنا رأيك في هذا المقال..." 
-                    className="min-h-[120px] mb-4 bg-background resize-none"
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                  />
-                  <div className="flex justify-end">
-                    <Button type="submit" className="gap-2 font-bold px-8 rounded-xl bg-primary hover:bg-primary/90">
-                      <Send className="w-4 h-4 ml-1 rotate-180" />
-                      نشر التعليق
+                {/* Author Bio Card */}
+                <div className="mt-16 p-8 bg-card rounded-2xl border border-border shadow-sm flex flex-col md:flex-row items-center md:items-start gap-6">
+                  <div 
+                    className="w-24 h-24 rounded-2xl text-white flex items-center justify-center font-black text-3xl shadow-lg shrink-0 rotate-3 hover:rotate-0 transition-transform"
+                    style={{ backgroundColor: article.author.avatarColor }}
+                  >
+                    {article.author.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                  </div>
+                  <div className="text-center md:text-right">
+                    <h3 className="text-xl font-black text-primary mb-1">الكاتب: {article.author.name}</h3>
+                    <p className="text-secondary font-bold text-sm mb-4">{article.author.role}</p>
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-4 max-w-lg">
+                      عضو في فريق الإعلام لعالم الفهود الكشفي والإرشادي، متخصص في تغطية أخبار ومبادرات الشباب وإيصال أصواتهم إلى العالم.
+                    </p>
+                    <Button variant="link" className="p-0 h-auto text-primary font-bold hover:text-secondary gap-1">
+                      عرض جميع مقالات الكاتب <LinkIcon className="w-3 h-3" />
                     </Button>
                   </div>
-                </form>
-
-                <div className="space-y-6">
-                  {/* Mock Comments */}
-                  {[
-                    { name: "فاطمة علي", time: "منذ ساعتين", text: "مقال رائع جداً ومبادرة تستحق الدعم. فخورة بأنني جزء من هذه الحركة العظيمة.", color: "#4D006E" },
-                    { name: "محمود حسن", time: "منذ ٥ ساعات", text: "التفاصيل المذكورة توضح حجم الجهد المبذول. أتمنى رؤية المزيد من هذه القصص الملهمة التي تعطينا الأمل.", color: "#0094B4" },
-                    { name: "ريم أحمد", time: "منذ يوم واحد", text: "شكراً لفريق الإعلام على التغطية المتميزة. شاركت المقال مع جميع أصدقائي في فرقة الكشافة.", color: "#F5B041" }
-                  ].map((c, i) => (
-                    <div key={i} className="flex gap-4 p-4 rounded-xl hover:bg-muted/30 transition-colors">
-                      <div className="w-10 h-10 rounded-lg text-white flex items-center justify-center font-bold text-sm shrink-0" style={{ backgroundColor: c.color }}>
-                        {c.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-3 mb-1">
-                          <span className="font-bold text-foreground">{c.name}</span>
-                          <span className="text-xs text-muted-foreground">{c.time}</span>
-                        </div>
-                        <p className="text-muted-foreground text-sm leading-relaxed">{c.text}</p>
-                      </div>
-                    </div>
-                  ))}
                 </div>
-              </div>
 
+                {/* Comments Section */}
+                <div className="mt-16 pt-16 border-t border-border">
+                  <h3 className="text-2xl font-black text-primary mb-8 flex items-center gap-3">
+                    <MessageSquare className="w-6 h-6 text-secondary" />
+                    التعليقات (٣)
+                  </h3>
+                  
+                  <AuthGuard 
+                    title="سجل دخولك للمشاركة في النقاش" 
+                    description="يرجى تسجيل الدخول أو إنشاء حساب لتتمكن من إضافة تعليقاتك والتفاعل مع المقال."
+                  >
+                    <form onSubmit={handleSubmitComment} className="mb-10 bg-muted/20 p-6 rounded-2xl border border-border/50">
+                      <h4 className="font-bold text-foreground mb-4">أضف تعليقاً</h4>
+                      <div className="flex gap-4">
+                        <Textarea 
+                          placeholder="شاركنا رأيك في هذا المقال..." 
+                          className="min-h-[120px] mb-4 bg-background resize-none flex-1"
+                          value={comment}
+                          onChange={(e) => setComment(e.target.value)}
+                        />
+                      </div>
+                      <div className="flex justify-end">
+                        <Button type="submit" className="gap-2 font-bold px-8 rounded-xl bg-primary hover:bg-primary/90">
+                          <Send className="w-4 h-4 ml-1 rotate-180" />
+                          نشر التعليق
+                        </Button>
+                      </div>
+                    </form>
+                  </AuthGuard>
+
+                  <div className="space-y-6">
+                    {/* Mock Comments */}
+                    {[
+                      { name: "فاطمة علي", time: "منذ ساعتين", text: "مقال رائع جداً ومبادرة تستحق الدعم. فخورة بأنني جزء من هذه الحركة العظيمة.", color: "#4D006E" },
+                      { name: "محمود حسن", time: "منذ ٥ ساعات", text: "التفاصيل المذكورة توضح حجم الجهد المبذول. أتمنى رؤية المزيد من هذه القصص الملهمة التي تعطينا الأمل.", color: "#0094B4" },
+                      { name: "ريم أحمد", time: "منذ يوم واحد", text: "شكراً لفريق الإعلام على التغطية المتميزة. شاركت المقال مع جميع أصدقائي في فرقة الكشافة.", color: "#F5B041" }
+                    ].map((c, i) => (
+                      <div key={i} className="flex gap-4 p-4 rounded-xl hover:bg-muted/30 transition-colors">
+                        <div className="w-10 h-10 rounded-lg text-white flex items-center justify-center font-bold text-sm shrink-0" style={{ backgroundColor: c.color }}>
+                          {c.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-3 mb-1">
+                            <span className="font-bold text-foreground">{c.name}</span>
+                            <span className="text-xs text-muted-foreground">{c.time}</span>
+                          </div>
+                          <p className="text-muted-foreground text-sm leading-relaxed">{c.text}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
             </motion.div>
           </div>
           

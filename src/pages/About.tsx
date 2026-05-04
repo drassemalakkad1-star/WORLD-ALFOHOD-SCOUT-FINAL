@@ -4,10 +4,12 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { getLeadership, urlFor } from "@/lib/sanityClient";
 import aboutHeroImg from "@/assets/images/about-hero.webp";
 
 export default function About() {
+  const { t } = useTranslation();
   const { data: leaders, isLoading } = useQuery({
     queryKey: ["leadership"],
     queryFn: getLeadership,
@@ -16,10 +18,10 @@ export default function About() {
   return (
     <SiteLayout>
       <PageHero
-        title="من نحن"
-        description="حركة شبابية عالمية تهدف إلى تمكين الشباب وبناء قادة المستقبل."
+        title={t('about.title')}
+        description={t('about.subtitle')}
         image={aboutHeroImg}
-        breadcrumbs={[{ label: "من نحن", href: "/about" }]}
+        breadcrumbs={[{ label: t('about.title'), href: "/about" }]}
       />
       
       <section className="py-20">
@@ -31,7 +33,7 @@ export default function About() {
               viewport={{ once: true }}
               className="text-4xl font-black text-primary mb-6"
             >
-              تاريخ <span className="text-secondary">الحركة</span>
+              {t('about.historyTitle').split(' ')[0]} <span className="text-secondary">{t('about.historyTitle').split(' ').slice(1).join(' ')}</span>
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -40,12 +42,12 @@ export default function About() {
               transition={{ delay: 0.1 }}
               className="text-xl text-muted-foreground leading-relaxed"
             >
-              تأسست عام ١٩٠٧ الكشافة الأصلية وتحولت إلى عالم الفهود الكشفي والإرشادي في مسيرة قرن من الزمان، بهدف واحد: ترك العالم أفضل مما وجدناه.
+              {t('about.historyDesc')}
             </motion.p>
           </div>
 
           <div className="mb-20">
-            <h3 className="text-3xl font-bold text-primary mb-10 text-center">فريق القيادة</h3>
+            <h3 className="text-3xl font-bold text-primary mb-10 text-center">{t('about.leadershipTitle')}</h3>
             {isLoading ? (
               <div className="flex justify-center py-12">
                 <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -87,16 +89,16 @@ export default function About() {
           </div>
 
           <div className="bg-muted/30 rounded-3xl p-8 md:p-12 mb-20 text-center">
-            <h3 className="text-3xl font-bold text-primary mb-6">التقارير السنوية</h3>
+            <h3 className="text-3xl font-bold text-primary mb-6">{t('about.reportsTitle')}</h3>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-              نلتزم بالشفافية الكاملة في جميع أعمالنا. اقرأ تقاريرنا السنوية لمعرفة المزيد عن تأثيرنا المالي والمجتمعي.
+              {t('about.reportsDesc')}
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" className="bg-primary text-white hover:bg-primary/90 rounded-full font-bold">
-                تقرير ٢٠٢٣ <Download className="mr-2 h-5 w-5" />
+                {t('about.report2023')} <Download className="mr-2 h-5 w-5" />
               </Button>
               <Button size="lg" variant="outline" className="rounded-full font-bold">
-                تقرير ٢٠٢٢ <Download className="mr-2 h-5 w-5" />
+                {t('about.report2022')} <Download className="mr-2 h-5 w-5" />
               </Button>
             </div>
           </div>

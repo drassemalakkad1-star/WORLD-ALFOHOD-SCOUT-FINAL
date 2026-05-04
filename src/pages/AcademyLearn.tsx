@@ -11,6 +11,8 @@ import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/components/auth/authContext";
 import { useToast } from "@/hooks/use-toast";
 import { academyApi } from "@/lib/academyApi";
+import { AuthGuard } from "@/components/auth/AuthGuard";
+import { useInstructorStore } from "@/lib/instructorStore";
 
 export default function AcademyLearn() {
   const [, params] = useRoute<{ slug: string }>("/academy/learn/:slug");
@@ -25,18 +27,40 @@ export default function AcademyLearn() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Authentication and enrollment checks
-  useEffect(() => {
-    if (!authState.isLoading && !authState.user) {
-      setLocation(`/login?returnTo=/academy/learn/${slug}`);
-    }
-  }, [authState.user, authState.isLoading, setLocation, slug]);
+  // Authentication check handled by AuthGuard later in the render
+  
+  const { getCourseById } = useInstructorStore();
 
-  const { data: course, isLoading: isCourseLoading } = useQuery({
+  const { data: apiCourse, isLoading: isCourseLoadingApi } = useQuery({
     queryKey: ["academyCourse", slug],
     queryFn: () => academyApi.getCourse(slug),
     enabled: !!slug && !!authState.user,
+    retry: false
   });
+
+  const localCourse = getCourseById(slug);
+  const course = apiCourse || (localCourse ? {
+    ...localCourse,
+    subtitle: localCourse.description.substring(0, 100),
+    longDescription: localCourse.description,
+    rating: 5.0,
+    enrolledCount: 120,
+    duration: "غير محدد",
+    lessonsCount: localCourse.lessons.length,
+    instructor: {
+      name: "قائد كشفي",
+      title: "مدرب معتمد",
+      bio: "خبير في التدريب الكشفي والإرشادي.",
+      avatarColor: "#004225"
+    },
+    skills: ["القيادة", "العمل الجماعي"],
+    isFree: true,
+    price: 0,
+    certificate: true,
+    coverColor: localCourse.thumbnail || "#004225"
+  } : null);
+
+  const isCourseLoading = isCourseLoadingApi && !localCourse;
 
   const { data: enrollments, isLoading: isEnrollmentsLoading } = useQuery({
     queryKey: ["academyEnrollments", authState.user?.email],
@@ -44,7 +68,15 @@ export default function AcademyLearn() {
     enabled: !!authState.user?.email,
   });
 
-  const enrollment = enrollments?.find(e => e.courseSlug === slug);
+  const enrollment = enrollments?.find(e => e.courseSlug === slug) || (localCourse ? {
+    enrollmentId: 0,
+    courseSlug: slug,
+    userEmail: authState.user?.email || "",
+    progressPct: 0,
+    lessonsCompleted: [],
+    completedAt: null
+  } : null);
+
   const isEnrolled = !!enrollment;
 
   useEffect(() => {
@@ -64,7 +96,7 @@ export default function AcademyLearn() {
 
   const markCompleteMutation = useMutation({
     mutationFn: ({ lessonSlug, completed }: { lessonSlug: string, completed: boolean }) => 
-      academyApi.markLessonComplete(enrollment!.enrollmentId, lessonSlug, completed),
+      academyApi.markLessonComplete(enrollment?.enrollmentId || 0, lessonSlug, completed),
     onSuccess: (data) => {
       // Optimitic update logic is complex, just invalidate
       queryClient.invalidateQueries({ queryKey: ["academyEnrollments"] });
@@ -76,6 +108,14 @@ export default function AcademyLearn() {
       }
     }
   });
+
+  if (!authState.isLoading && !authState.user) {
+    return (
+      <AuthGuard title="أكاديمية الكشافة" description="يرجى تسجيل الدخول لمتابعة مسارك التعليمي.">
+        <div />
+      </AuthGuard>
+    );
+  }
 
   if (isCourseLoading || isEnrollmentsLoading || !course || !enrollment) {
     return (

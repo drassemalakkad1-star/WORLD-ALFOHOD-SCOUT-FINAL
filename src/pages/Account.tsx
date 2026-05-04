@@ -9,7 +9,7 @@ import {
   LogOut, User, CreditCard, CalendarDays, ShoppingBag, Settings, 
   LayoutDashboard, MapPin, Mail, Medal, Activity, Download, Loader2, 
   GraduationCap, PawPrint, ChevronDown, ChevronUp, Clock, Truck, 
-  CheckCircle2, Package, Search, Box
+  CheckCircle2, Package, Search, Box, Home
 } from "lucide-react";
 
 import { useAuth } from "@/components/auth/authContext";
@@ -26,6 +26,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { events } from "@/data/events";
 import { academyApi } from "@/lib/academyApi";
+import { AuthGuard } from "@/components/auth/AuthGuard";
+import { SiteLayout } from "@/components/layout/SiteLayout";
+
 
 const profileSchema = z.object({
   name: z.string().min(2, { message: "الاسم مطلوب" }),
@@ -49,11 +52,7 @@ export default function Account() {
   const [orderFilter, setOrderFilter] = useState("الكل");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!state.isLoading && !state.user) {
-      setLocation("/login");
-    }
-  }, [state.user, state.isLoading, setLocation]);
+  // Authentication check handled by AuthGuard later in the render
 
   useEffect(() => {
     if (activeTab === "orders") {
@@ -92,6 +91,14 @@ export default function Account() {
       bio: state.user?.bio || "",
     },
   });
+
+  if (!state.isLoading && !state.user) {
+    return (
+      <AuthGuard title="حسابي" description="يرجى تسجيل الدخول للوصول إلى تفاصيل حسابك وطلباتك.">
+        <div />
+      </AuthGuard>
+    );
+  }
 
   if (state.isLoading || !state.user) {
     return (
@@ -183,7 +190,9 @@ export default function Account() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12 flex flex-col lg:flex-row gap-8 min-h-[calc(100vh-80px)]">
+    <SiteLayout>
+      <div className="container mx-auto px-4 py-8 md:py-12 flex flex-col lg:flex-row gap-8 min-h-[calc(100vh-80px)]">
+
       {/* Sidebar */}
       <aside className="lg:w-1/4 flex-shrink-0">
         <div className="bg-card border border-border rounded-2xl p-6 sticky top-28 space-y-8">
@@ -201,6 +210,17 @@ export default function Account() {
           </div>
           
           <nav className="flex flex-col gap-2">
+            <Link href="/">
+              <button
+                className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-right w-full mb-2"
+              >
+                <Home className="h-5 w-5" />
+                الصفحة الرئيسية
+              </button>
+            </Link>
+
+            <div className="mb-2 border-t border-border opacity-50" />
+            
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -871,6 +891,7 @@ export default function Account() {
           )}
         </motion.div>
       </main>
-    </div>
+      </div>
+    </SiteLayout>
   );
 }

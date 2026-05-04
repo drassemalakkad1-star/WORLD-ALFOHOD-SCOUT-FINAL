@@ -23,7 +23,7 @@ function saveEnrollments(data: StoredEnrollment[]) {
   try { localStorage.setItem(ENROLLMENTS_KEY, JSON.stringify(data)); } catch {}
 }
 
-async function getAllCourses() {
+async function getAllCourses(): Promise<Course[]> {
   let combined = [...ACADEMY_COURSES];
   
   try {
@@ -35,12 +35,12 @@ async function getAllCourses() {
         slug: sc.slug,
         title: sc.title,
         subtitle: sc.description?.slice(0, 100) + "...",
-        description: sc.description,
-        longDescription: sc.description,
-        category: sc.category,
-        level: sc.level,
-        duration: sc.duration,
-        lessonsCount: sc.lessons || 0,
+        description: sc.description || "",
+        longDescription: sc.description || "",
+        category: sc.category || "عام",
+        level: sc.level || "مبتدئ",
+        duration: sc.duration || "غير محدد",
+        lessonsCount: sc.lessonsCount || (Array.isArray(sc.lessons) ? sc.lessons.length : (sc.lessons || 0)),
         enrolledCount: sc.enrollmentCount || 0,
         rating: sc.rating || 5,
         price: sc.price || 0,
@@ -51,13 +51,20 @@ async function getAllCourses() {
           name: sc.instructor || "قائد كشفي",
           title: "مدرب معتمد",
           bio: "",
-          avatarColor: "bg-primary"
+          avatarColor: "#004225"
         },
-        skills: [],
-        requirements: [],
-        lessons: [],
-        coverColor: sc.image ? urlFor(sc.image).url() : "bg-primary",
-        certificate: true
+        skills: sc.skills || [],
+        requirements: sc.requirements || [],
+        lessons: Array.isArray(sc.lessons) ? sc.lessons.map((l: any, idx: number) => ({
+          id: l._id || `l-${idx}`,
+          slug: l.slug?.current || `lesson-${idx}`,
+          title: l.title || `درس ${idx + 1}`,
+          duration: l.duration || "10 دق",
+          type: l.type || "video",
+          description: l.description || ""
+        })) : [],
+        coverColor: sc.image ? urlFor(sc.image).url() : "#004225",
+        certificate: sc.certificate !== undefined ? sc.certificate : true
       }));
 
       // Merge and remove duplicates by slug (Sanity version wins)
@@ -78,10 +85,10 @@ async function filterCourses(params?: {
   const allCourses = await getAllCourses();
   let list = [...allCourses];
 
-  if (params?.category) {
+  if (params?.category && params.category !== "all") {
     list = list.filter(c => c.category === params.category);
   }
-  if (params?.level) {
+  if (params?.level && params.level !== "all") {
     list = list.filter(c => c.level === params.level);
   }
   if (params?.q) {
@@ -95,12 +102,17 @@ async function filterCourses(params?: {
   }
 
   switch (params?.sort) {
-    case "popular":    list.sort((a, b) => b.enrolledCount - a.enrolledCount); break;
-    case "rating":     list.sort((a, b) => b.rating - a.rating); break;
-    case "price-asc":  list.sort((a, b) => a.price - b.price); break;
-    case "price-desc": list.sort((a, b) => b.price - a.price); break;
-    default: /* newest — keep original order which already has isNew first */
-      list.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+    case "popular":    list.sort((a, b) => (b.enrolledCount || 0) - (a.enrolledCount || 0)); break;
+    case "rating":     list.sort((a, b) => (b.rating || 0) - (a.rating || 0)); break;
+    case "price-asc":  list.sort((a, b) => (a.price || 0) - (b.price || 0)); break;
+    case "price-desc": list.sort((a, b) => (b.price || 0) - (a.price || 0)); break;
+    default:
+      // Featured and New first
+      list.sort((a, b) => {
+        if (a.isFeatured !== b.isFeatured) return a.isFeatured ? -1 : 1;
+        if (a.isNew !== b.isNew) return a.isNew ? -1 : 1;
+        return 0;
+      });
   }
 
   const pageSize = params?.pageSize ?? 9;
@@ -115,8 +127,13 @@ async function filterCourses(params?: {
 // ─── Public API ───────────────────────────────────────────────────────────
 export const academyApi = {
   getCategories: async (): Promise<{ name: string; count: number }[]> => {
+    const allCourses = await getAllCourses();
     const counts: Record<string, number> = {};
-    ACADEMY_COURSES.forEach(c => { counts[c.category] = (counts[c.category] || 0) + 1; });
+    allCourses.forEach(c => { 
+      if (c.category) {
+        counts[c.category] = (counts[c.category] || 0) + 1; 
+      }
+    });
     return Object.entries(counts).map(([name, count]) => ({ name, count }));
   },
 
@@ -135,8 +152,7 @@ export const academyApi = {
   },
 
   getLesson: async (courseSlug: string, lessonSlug: string) => {
-    const course = ACADEMY_COURSES.find(c => c.slug === courseSlug);
-    if (!course) throw new Error("Course not found");
+    const course = await academyApi.getCourse(courseSlug);
     const lesson = course.lessons.find(l => l.slug === lessonSlug);
     if (!lesson) throw new Error("Lesson not found");
     return lesson;
@@ -159,14 +175,18 @@ export const academyApi = {
   },
 
   listMyEnrollments: async (email: string): Promise<EnrollmentWithCourse[]> => {
+    const allCourses = await getAllCourses();
     const enrollments = loadEnrollments().filter(e => e.userEmail === email);
     return enrollments.map(e => {
-      const course = ACADEMY_COURSES.find(c => c.slug === e.courseSlug)!;
-      const progressPct = course
+      const course = allCourses.find(c => c.slug === e.courseSlug);
+      if (!course) return null;
+      
+      const progressPct = course.lessonsCount > 0
         ? Math.round((e.lessonsCompleted.length / course.lessonsCount) * 100)
         : 0;
+        
       return { ...e, course, progressPct };
-    }).filter(e => e.course);
+    }).filter((e): e is EnrollmentWithCourse => e !== null);
   },
 
   markLessonComplete: async (
@@ -188,8 +208,9 @@ export const academyApi = {
     enrollments[idx] = { ...enrollment, lessonsCompleted };
     saveEnrollments(enrollments);
 
-    const course = ACADEMY_COURSES.find(c => c.slug === enrollment.courseSlug);
-    const progressPct = course
+    const allCourses = await getAllCourses();
+    const course = allCourses.find(c => c.slug === enrollment.courseSlug);
+    const progressPct = course && course.lessonsCount > 0
       ? Math.round((lessonsCompleted.length / course.lessonsCount) * 100)
       : 0;
 

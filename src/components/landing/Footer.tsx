@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Link } from "wouter";
-import { PawPrint, Mail, MapPin, Phone } from "lucide-react";
+import { PawPrint, Mail, MapPin, Phone, X } from "lucide-react";
 import { SiFacebook, SiX, SiInstagram, SiYoutube } from "react-icons/si";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 const QUICK_LINKS = [
   { label: "من نحن", href: "/about" },
@@ -12,15 +14,18 @@ const QUICK_LINKS = [
 ];
 
 const SOCIAL_LINKS = [
-  { label: "Facebook",  href: "https://facebook.com",  icon: SiFacebook },
-  { label: "Twitter",   href: "https://twitter.com",   icon: SiX },
-  { label: "Instagram", href: "https://instagram.com", icon: SiInstagram },
-  { label: "Youtube",   href: "https://youtube.com",   icon: SiYoutube },
+  { label: "Facebook",  url: "https://www.facebook.com",  icon: SiFacebook },
+  { label: "Twitter",   url: "https://www.twitter.com",   icon: SiX },
+  { label: "Instagram", url: "https://www.instagram.com", icon: SiInstagram },
+  { label: "Youtube",   url: "https://www.youtube.com",   icon: SiYoutube },
 ];
 
 export function Footer() {
+  const [socialModal, setSocialModal] = useState<{ label: string; url: string } | null>(null);
+
   return (
-    <footer className="bg-primary text-white pt-20 pb-10">
+    <>
+      <footer className="bg-primary text-white pt-20 pb-10">
       <div className="container mx-auto px-4 md:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-2">
@@ -32,18 +37,16 @@ export function Footer() {
               حركة شبابية عالمية تهدف إلى تمكين الشباب وبناء قادة المستقبل. نؤمن بأن كل شاب يمتلك القدرة على تغيير العالم.
             </p>
             <div className="flex gap-4">
-              {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (
-                <a
+              {SOCIAL_LINKS.map(({ label, url, icon: Icon }) => (
+                <button
                   key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  onClick={() => setSocialModal({ label, url })}
                   aria-label={label}
                   className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center hover:bg-secondary transition-colors"
                   data-testid={`link-social-${label.toLowerCase()}`}
                 >
                   <Icon className="h-5 w-5 text-white" />
-                </a>
+                </button>
               ))}
             </div>
           </div>
@@ -89,5 +92,31 @@ export function Footer() {
         </div>
       </div>
     </footer>
+
+    {/* Social Media In-Site Modal */}
+    <Dialog open={!!socialModal} onOpenChange={(o) => !o && setSocialModal(null)}>
+      <DialogContent className="max-w-[95vw] h-[85vh] p-0 overflow-hidden bg-black border-none">
+        <DialogTitle className="sr-only">{socialModal?.label}</DialogTitle>
+        <div className="absolute top-3 right-3 z-50">
+          <button
+            onClick={() => setSocialModal(null)}
+            className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/25 flex items-center justify-center text-white transition-colors"
+            aria-label="إغلاق"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        {socialModal && (
+          <iframe
+            src={socialModal.url}
+            className="w-full h-full border-none"
+            title={socialModal.label}
+            allow="autoplay; fullscreen"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  </>
   );
 }

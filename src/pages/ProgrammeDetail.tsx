@@ -45,10 +45,42 @@ export default function ProgrammeDetail() {
                 <div className="font-bold text-muted-foreground">ساعة عمل</div>
               </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-right mb-16">
+              <div>
+                <h3 className="text-2xl font-bold text-primary mb-4 border-r-4 border-secondary pr-4">الأهداف الاستراتيجية</h3>
+                <ul className="space-y-4 text-muted-foreground">
+                  <li className="flex items-start gap-3">
+                    <span className="w-2 h-2 mt-2 rounded-full bg-secondary shrink-0" />
+                    تمكين الشباب من المهارات القيادية اللازمة لمواجهة تحديات المستقبل.
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="w-2 h-2 mt-2 rounded-full bg-secondary shrink-0" />
+                    تعزيز ثقافة السلام والحوار بين الأديان والثقافات المختلفة.
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="w-2 h-2 mt-2 rounded-full bg-secondary shrink-0" />
+                    المساهمة الفعالة في تحقيق أهداف التنمية المستدامة (SDGs).
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-primary mb-4 border-r-4 border-secondary pr-4">منهجية العمل</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  تعتمد المنهجية على "التعلم بالممارسة" من خلال مجموعات صغيرة وبإشراف قادة مؤهلين. نستخدم النظام الكشفي العالمي لضمان جودة المخرجات التعليمية والتربوية، مع مراعاة الخصوصية الثقافية والبيئية لكل مجتمع.
+                </p>
+              </div>
+            </div>
             
-            <Button size="lg" className="h-16 px-10 text-xl font-bold bg-primary text-white hover:bg-primary/90 rounded-full">
-              انضم إلى البرنامج
-            </Button>
+            <div className="bg-primary/5 p-10 rounded-[2.5rem] border border-primary/10">
+              <h3 className="text-2xl font-bold text-primary mb-4">هل أنت مستعد لتكون جزءاً من التغيير؟</h3>
+              <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
+                انضم إلينا اليوم وابدأ رحلتك في تعلم مهارات جديدة، تكوين صداقات عالمية، وترك بصمة إيجابية في العالم.
+              </p>
+              <Button size="lg" className="h-16 px-10 text-xl font-bold bg-primary text-white hover:bg-primary/90 rounded-full shadow-lg shadow-primary/20">
+                انضم إلى البرنامج الآن
+              </Button>
+            </div>
           </motion.div>
         </div>
       </section>
