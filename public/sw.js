@@ -1,4 +1,4 @@
-﻿// WORLD ALFOHOD SCOUT — minimal app-shell service worker.
+// WORLD ALFOHOD SCOUT — minimal app-shell service worker.
 const CACHE = "alfohod-v1";
 const APP_SHELL = ["/" "/manifest.webmanifest" "/favicon.svg"];
 
